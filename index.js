@@ -1,12 +1,8 @@
 const core = require('@actions/core');
+const { exec } = require('child_process');
 
 try {
-    console.time("energy");
-    const { exec } = require('child_process');
-
-    exec('sar -u 1 5 -o test.txt', (err, stdout, stderr) => {
-        console.log(err, stdout, stderr)
-    });
+    start = process.cpuUsage()
 
     const unitTest = core.getInput('what-to-test');
     exec(unitTest, (err, stdout, stderr) => {
@@ -15,8 +11,7 @@ try {
     });
     const time = (new Date()).toTimeString();
     core.setOutput("time", time);
-
-    console.timeEnd("energy");
+    console.log(process.cpuUsage(start))
 } catch (error) {
     core.setFailed(error.message);
 }
