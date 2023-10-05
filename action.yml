@@ -9,4 +9,4 @@ outputs:
     description: 'The amount of Joules it took to run'
 runs:
   using: 'node20'
-  main: 'index.js'
+  main: 'dist/index.js'
