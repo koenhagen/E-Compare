@@ -1,0 +1,12 @@
+name: 'Measure Energy'
+description: 'Measures energy in the background of your unit tests'
+inputs:
+  what-to-test:
+    description: 'Which command to measure the power usage of. Presumed to be unit tests'
+    required: true
+outputs:
+  joules:
+    description: 'The amount of Joules it took to run'
+runs:
+  using: 'node20'
+  main: 'index.js'
