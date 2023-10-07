@@ -8,9 +8,9 @@ try {
     start = process.cpuUsage();
 
     const unitTest = core.getInput('what-to-test');
-    exec(unitTest, (err, stdout, stderr) => {
-        console.log(`CPU Usage (%): ${err}, ${stdout}, ${stderr}`);
+    exec(unitTest, (err) => {
         if (err != null) {
+            console.log(`Error ${err}`);
             return err;
         }
         const total = Object.values(cpu.times).reduce(
@@ -18,11 +18,12 @@ try {
         );
 
         const usage = process.cpuUsage();
-        const currentCPUUsage = (usage.user + usage.system) * 1000;
+        const currentCPUUsage = (usage.user + usage.system) / 1000;
 
         const perc = currentCPUUsage / total * 100;
 
         console.log(Object.values(cpu.times));
+        console.log(`Total: ${total}`);
         console.log(`CPU Usage (%): ${perc}`);
         console.log(process.cpuUsage(start));
     });
