@@ -2861,18 +2861,33 @@ var __webpack_exports__ = {};
 (() => {
 const core = __nccwpck_require__(13);
 const { exec } = __nccwpck_require__(81);
+const os = __nccwpck_require__(37);
 
 try {
-    start = process.cpuUsage()
+    const cpus = os.cpus();
+    const cpu = cpus[0];
+    start = process.cpuUsage();
 
     const unitTest = core.getInput('what-to-test');
     exec(unitTest, (err, stdout, stderr) => {
-        console.log(unitTest)
-        console.log(err, stdout, stderr)
+        console.log(`CPU Usage (%): ${err}, ${stdout}, ${stderr}`);
+        if (err != null) {
+            return err;
+        }
+        const total = Object.values(cpu.times).reduce(
+            (acc, tv) => acc + tv, 0
+        );
+
+        const usage = process.cpuUsage();
+        const currentCPUUsage = (usage.user + usage.system) * 1000;
+
+        const perc = currentCPUUsage / total * 100;
+
+        console.log(Object.values(cpu.times));
+        console.log(`CPU Usage (%): ${perc}`);
+        console.log(process.cpuUsage(start));
     });
-    const time = (new Date()).toTimeString();
-    core.setOutput("time", time);
-    console.log(process.cpuUsage(start))
+
 } catch (error) {
     core.setFailed(error.message);
 }
