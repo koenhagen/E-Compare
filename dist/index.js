@@ -2886,7 +2886,6 @@ try {
         console.log(Object.values(cpu.times));
         console.log(`Total: ${total}`);
         console.log(`CPU Usage (%): ${perc}`);
-        console.log(process.cpuUsage(start));
     });
 
 } catch (error) {

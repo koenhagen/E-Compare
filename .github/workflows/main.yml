@@ -9,23 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     name: A job to measure energy
     steps:
-      # Setup the flutter environment.
-      - uses: subosito/flutter-action@v1
-        with:
-          channel: 'stable' # 'dev', 'alpha', default to: 'stable'
-          # flutter-version: '1.12.x' # you can also specify exact version of flutter
-
-      # Checkout the branch
-      - uses: actions/checkout@v1
-
-      # Get flutter dependencies.
-      - run: flutter pub get
-
-      # Run widget tests for our flutter project.
-      # See: https://github.com/flutter/flutter/issues/27997#issuecomment-587536884
-      - name: Force coverage on all dart files in lib
-        shell: bash
-        run: .github/scripts/fix_coverage.sh zell
 
       - name: Checkout
         id: checkout
@@ -35,4 +18,4 @@ jobs:
         id: hello
         uses: ./
         with:
-          what-to-test: flutter run --coverage
+          what-to-test: sleep 60
