@@ -1,9 +1,8 @@
-name: run-code
+name: run-energy-measurer
 
 on:
-  push:
-    branches:
-      - main
+  pull_request:
+    types: [opened, reopened]
 jobs:
   measure-energy:
     runs-on: ubuntu-latest
@@ -15,7 +14,9 @@ jobs:
         uses: actions/checkout@v4
         
       - name: run-energy-measuring
-        id: hello
+        id: energy
         uses: ./
         with:
           what-to-test: sleep 60
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
