@@ -9822,7 +9822,6 @@ const os = __nccwpck_require__(2037);
 const github = __nccwpck_require__(3922);
 
 try {
-    const payload = JSON.stringify(github.context.payload, undefined, 2)
     const github_token = core.getInput('github_token');
 
     const octokit = github.getOctokit(github_token);
