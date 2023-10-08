@@ -9822,16 +9822,6 @@ const os = __nccwpck_require__(2037);
 const github = __nccwpck_require__(3922);
 
 try {
-    const github_token = core.getInput('github_token');
-    console.log(github_token);
-    const octokit = github.getOctokit(github_token);
-    // const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
-    octokit.rest.issues.createComment({
-        ...github.context.repo,
-        issue_number: github.context.payload.pull_request.number,
-        body: 'message'
-    }).then(result => console.log(`result ${result}`))
-
     const cpus = os.cpus();
     const cpu = cpus[0];
     start = process.cpuUsage();
@@ -9855,6 +9845,19 @@ try {
         console.log(`Total: ${total}`);
         console.log(`CPU Usage (%): ${perc}`);
     });
+
+    const github_token = core.getInput('github_token');
+    console.log(github_token);
+    if (github_token === '' || !github_token) { //No github secrets access
+        return
+    }
+    const octokit = github.getOctokit(github_token);
+    // const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+    octokit.rest.issues.createComment({
+        ...github.context.repo,
+        issue_number: github.context.payload.pull_request.number,
+        body: 'message'
+    }).then(result => console.log(`result ${result}`))
 
 } catch (error) {
     core.setFailed(error.message);
