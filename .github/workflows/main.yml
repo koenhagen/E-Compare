@@ -17,6 +17,5 @@ jobs:
         id: energy
         uses: ./
         with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
           what-to-test: sleep 60
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
