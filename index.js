@@ -5,7 +5,7 @@ const github = require('@actions/github');
 
 try {
     const github_token = core.getInput('github_token');
-
+    console.log(github_token);
     const octokit = github.getOctokit(github_token);
     // const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
     octokit.rest.issues.createComment({
