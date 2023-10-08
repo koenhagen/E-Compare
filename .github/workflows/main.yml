@@ -2,9 +2,7 @@ name: run-energy-measurer
 
 on:
   pull_request_target:
-    types:
-      - opened
-      - reopened
+    types: [opened, reopened]
 jobs:
   measure-energy:
     permissions:
