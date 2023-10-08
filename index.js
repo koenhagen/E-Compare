@@ -10,25 +10,30 @@ try {
 
     const octokit = new Octokit();
     const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
-    octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/comments', {
-        owner: owner,
-        repo: repo,
-        pull_number: 'PULL_NUMBER',
-        body: 'Great stuff!',
-        commit_id: '6dcb09b5b57875f334f61aebed695e2e4193db5e',
-        path: 'file1.txt',
-        start_line: 1,
-        start_side: 'RIGHT',
-        line: 2,
-        side: 'RIGHT',
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-        }
-    }).then(data => {
-        console.log(data);
-    })
+    octokit.issues.createComment({
+        ...github.context.repo,
+        issue_number: github.context.payload.pull_request.number,
+        body: 'message'
+    }).then(result => console.log(`result ${result}`))
 
-    console.log("Data: %s", data);
+    // octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/comments', {
+    //     owner: owner,
+    //     repo: repo,
+    //     pull_number: github.context.payload.pull_request.number,
+    //     body: 'Great stuff!',
+    //     commit_id: github.context.payload.issue.,
+    //     path: 'file1.txt',
+    //     start_line: 1,
+    //     start_side: 'RIGHT',
+    //     line: 2,
+    //     side: 'RIGHT',
+    //     headers: {
+    //         'X-GitHub-Api-Version': '2022-11-28'
+    //     }
+    // }).then(data => {
+    //     console.log(data);
+    // })
+
     const cpus = os.cpus();
     const cpu = cpus[0];
     start = process.cpuUsage();
