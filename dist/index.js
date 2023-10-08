@@ -9848,7 +9848,7 @@ try {
 
     const github_token = core.getInput('github_token');
     console.log(github_token);
-    if (github_token === '' || !github_token) { //No github secrets access
+    if (github_token === '' || !github_token) { //No GitHub secrets access
         return
     }
     const octokit = github.getOctokit(github_token);
