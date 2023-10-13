@@ -22,5 +22,6 @@ jobs:
         with:
           what-to-test: sleep 60
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TOKEN: ${{ github.token }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

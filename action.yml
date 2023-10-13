@@ -4,7 +4,10 @@ inputs:
   what-to-test:
     description: 'Which command to measure the power usage of. Presumed to be unit tests'
     required: true
-  github-token:
+  GITHUB-TOKEN:
+    description: 'The secret github token so the tool can place comments'
+    required: true
+  TOKEN:
     description: 'The secret github token so the tool can place comments'
     required: true
 outputs:
