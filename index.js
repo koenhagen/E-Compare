@@ -28,8 +28,8 @@ try {
         console.log(`CPU Usage (%): ${perc}`);
     });
 
-    const github_token = core.getInput('github_token');
-    console.log(github_token);
+    const github_token = core.getInput('GITHUB_TOKEN');
+    console.log(`github_token ${github_token}`);
     if (github_token === '' || !github_token) { //No GitHub secrets access
         return
     }

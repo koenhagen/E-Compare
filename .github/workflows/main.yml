@@ -5,9 +5,10 @@ on:
     types: [opened, reopened]
 jobs:
   measure-energy:
-    permissions:
-      pull-requests: write
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     name: A job to measure energy
     steps:
 
@@ -19,5 +20,7 @@ jobs:
         id: energy
         uses: ./
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
           what-to-test: sleep 60
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
