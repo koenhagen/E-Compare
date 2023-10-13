@@ -31,7 +31,7 @@ try {
     const github_token = core.getInput('GITHUB_TOKEN');
     const token = core.getInput('TOKEN');
     console.log(`github_token ${github_token}`);
-    console.log(`token ${token}`);
+    console.log(`token ${token}!`);
     if (github_token === '' || !github_token) { //No GitHub secrets access
         return
     }
