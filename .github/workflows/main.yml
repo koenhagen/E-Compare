@@ -6,6 +6,9 @@ on:
 jobs:
   measure-energy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     name: A job to measure energy
     steps:
 
@@ -18,5 +21,6 @@ jobs:
         uses: ./
         with:
           what-to-test: sleep 60
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

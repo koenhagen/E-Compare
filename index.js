@@ -2,30 +2,8 @@ const core = require('@actions/core');
 const { exec } = require('child_process');
 const os = require('os');
 const github = require('@actions/github');
-const { Octokit } = require("@octokit/rest");
 
 try {
-
-    const payload = JSON.stringify(github.context.payload, undefined, 2)
-    console.log(`The event payload: ${payload}`);
-
-    const octokit = new Octokit();
-    const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
-    // await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/comments', {
-    //     owner: owner,
-    //     repo: repo,
-    //     pull_number: 'PULL_NUMBER',
-    //     body: 'Great stuff!',
-    //     commit_id: '6dcb09b5b57875f334f61aebed695e2e4193db5e',
-    //     path: 'file1.txt',
-    //     start_line: 1,
-    //     start_side: 'RIGHT',
-    //     line: 2,
-    //     side: 'RIGHT',
-    //     headers: {
-    //         'X-GitHub-Api-Version': '2022-11-28'
-    //     }
-    // })
     const cpus = os.cpus();
     const cpu = cpus[0];
     start = process.cpuUsage();
@@ -49,6 +27,19 @@ try {
         console.log(`Total: ${total}`);
         console.log(`CPU Usage (%): ${perc}`);
     });
+
+    const github_token = core.getInput('GITHUB_TOKEN');
+    console.log(`github_token ${github_token}`);
+    if (github_token === '' || !github_token) { //No GitHub secrets access
+        return
+    }
+    const octokit = github.getOctokit(github_token);
+    // const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+    octokit.rest.issues.createComment({
+        ...github.context.repo,
+        issue_number: github.context.payload.pull_request.number,
+        body: 'message'
+    }).then(result => console.log(`result ${result}`))
 
 } catch (error) {
     core.setFailed(error.message);
