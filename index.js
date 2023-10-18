@@ -8,7 +8,7 @@ function createComment(octokit, perc) {
     octokit.rest.issues.createComment({
         ...github.context.repo,
         issue_number: github.context.payload.pull_request.number,
-        body: `The power usage is: ${perc}% more expensive than the branch being pulled into`
+        body: `The power usage is: ${perc}%`
     }).then(result => console.log(`result ${result.data}`))
 }
 
