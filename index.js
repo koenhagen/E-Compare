@@ -1,7 +1,31 @@
 const core = require('@actions/core');
-const { exec } = require('child_process');
+const {exec} = require('child_process');
 const os = require('os');
 const github = require('@actions/github');
+const {Base64} = require("js-base64");
+
+function createComment(octokit, perc) {
+    octokit.rest.issues.createComment({
+        ...github.context.repo,
+        issue_number: github.context.payload.pull_request.number,
+        body: `The power usage is: ${perc}% more expensive than the branch being pulled into`
+    }).then(result => console.log(`result ${result.data}`))
+}
+
+async function commitReport(octokit, article) {
+    const sha = github.context.sha;
+    const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+    octokit.repos.push()
+    await octokit.repos.createOrUpdateFileContents({
+        owner: owner,
+        repo: repo,
+        path: ".energy.md",
+        message: `Add power report"`,
+        content: Base64.encode(article),
+        sha,
+        branch: github.context.ref
+    }).then(result => console.log(`result ${result.data}`))
+}
 
 try {
     const cpus = os.cpus();
@@ -9,7 +33,7 @@ try {
     start = process.cpuUsage();
 
     const unitTest = core.getInput('what-to-test');
-    exec(unitTest, (err) => {
+    exec(unitTest, async (err) => {
         if (err != null) {
             console.log(`Error ${err}`);
             return err;
@@ -27,22 +51,15 @@ try {
         console.log(`Total: ${total}`);
         console.log(`CPU Usage (%): ${perc}`);
 
-
         const github_token = core.getInput('GITHUB_TOKEN');
-        const token = core.getInput('TOKEN');
-        console.log(`github_token ${github_token}`);
-        console.log(`token ${token}!`);
-        console.log(`number ${github.context.payload.pull_request.number}`);
         if (github_token === '' || !github_token) { //No GitHub secrets access
+            console.log(`Error: No GitHub secrets access`);
             return
         }
         const octokit = github.getOctokit(github_token);
-        // const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
-        octokit.rest.issues.createComment({
-            ...github.context.repo,
-            issue_number: github.context.payload.pull_request.number,
-            body: perc
-        }).then(result => console.log(`result ${result}`))
+        await commitReport(octokit, `CPU Usage (%): ${perc}`)
+
+        createComment(octokit, perc);
     });
 
 } catch (error) {
