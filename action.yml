@@ -7,9 +7,6 @@ inputs:
   GITHUB_TOKEN:
     description: 'The secret github token so the tool can place comments'
     required: true
-  TOKEN:
-    description: 'The secret github token so the tool can place comments'
-    required: true
 outputs:
   joules:
     description: 'The amount of Joules it took to run'
