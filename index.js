@@ -15,8 +15,8 @@ function createComment(octokit, perc) {
 async function commitReport(octokit, article) {
     const sha = github.context.sha;
     const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
-    octokit.repos.push()
-    await octokit.repos.createOrUpdateFileContents({
+
+    await octokit.rest.repos.createOrUpdateFileContents({
         owner: owner,
         repo: repo,
         path: ".energy.md",
