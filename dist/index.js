@@ -10134,7 +10134,7 @@ function createComment(octokit, perc) {
     octokit.rest.issues.createComment({
         ...github.context.repo,
         issue_number: github.context.payload.pull_request.number,
-        body: `The power usage is: ${perc}% more expensive than the branch being pulled into`
+        body: `The power usage is: ${perc}%`
     }).then(result => console.log(`result ${result.data}`))
 }
 
@@ -10142,7 +10142,7 @@ async function commitReport(octokit, article) {
     const sha = github.context.sha;
     const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
 
-    await octokit.repos.createOrUpdateFileContents({
+    await octokit.rest.repos.createOrUpdateFileContents({
         owner: owner,
         repo: repo,
         path: ".energy.md",
