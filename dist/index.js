@@ -10149,7 +10149,7 @@ async function commitReport(octokit, article) {
         message: `Add power report"`,
         content: Base64.encode(article),
         sha,
-        branch: github.context.ref
+        // branch: github.context.ref
     }).then(result => console.log(`result ${result.data}`))
 }
 
