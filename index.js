@@ -16,9 +16,6 @@ async function commitReport(octokit, article) {
     const sha = github.context.sha;
     const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
 
-    console.log(github.context.payload.pull_request);
-    console.log(github.context.payload.pull_request.head);
-    console.log(github.context.payload.pull_request['head']);
     await octokit.rest.repos.createOrUpdateFileContents({
         owner: owner,
         repo: repo,
@@ -26,7 +23,7 @@ async function commitReport(octokit, article) {
         message: `Add power report`,
         content: Base64.encode(article),
         sha,
-        branch: github.context.payload.pull_request.head
+        branch: github.context.payload.pull_request.head.ref
     }).then(result => console.log(`result ${result.data}`))
 }
 
