@@ -3,6 +3,7 @@ const {exec} = require('child_process');
 const os = require('os');
 const github = require('@actions/github');
 const {Base64} = require("js-base64");
+const { promises: fs } = require('fs')
 
 function createComment(octokit, perc) {
     octokit.rest.issues.createComment({
@@ -19,12 +20,17 @@ async function commitReport(octokit, article) {
     await octokit.rest.repos.createOrUpdateFileContents({
         owner: owner,
         repo: repo,
-        path: ".energy.md",
+        path: ".energy.json",
         message: `Add power report`,
         content: Base64.encode(article),
         sha,
         branch: github.context.payload.pull_request.head.ref
     }).then(result => console.log(`result ${result.data}`))
+}
+
+async function compareToOld(new_data) {
+    const old_data = await fs.readFile('.energy.json', 'utf8');
+    return old_data / new_data;
 }
 
 try {
@@ -57,9 +63,13 @@ try {
             return
         }
         const octokit = github.getOctokit(github_token);
-        await commitReport(octokit, `CPU Usage (%): ${perc}`)
-
-        createComment(octokit, perc);
+        const data = `
+        {
+        "cpu": ${perc}
+        }`
+        await commitReport(octokit, data)
+        const difference = compareToOld(data);
+        createComment(octokit, difference);
     });
 
 } catch (error) {

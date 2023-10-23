@@ -10129,6 +10129,7 @@ const {exec} = __nccwpck_require__(2081);
 const os = __nccwpck_require__(2037);
 const github = __nccwpck_require__(3922);
 const {Base64} = __nccwpck_require__(3439);
+const { promises: fs } = __nccwpck_require__(7147)
 
 function createComment(octokit, perc) {
     octokit.rest.issues.createComment({
@@ -10145,12 +10146,17 @@ async function commitReport(octokit, article) {
     await octokit.rest.repos.createOrUpdateFileContents({
         owner: owner,
         repo: repo,
-        path: ".energy.md",
+        path: ".energy.json",
         message: `Add power report`,
         content: Base64.encode(article),
         sha,
         branch: github.context.payload.pull_request.head.ref
     }).then(result => console.log(`result ${result.data}`))
+}
+
+async function compareToOld(new_data) {
+    const old_data = await fs.readFile('.energy.json', 'utf8');
+    return old_data / new_data;
 }
 
 try {
@@ -10183,9 +10189,13 @@ try {
             return
         }
         const octokit = github.getOctokit(github_token);
-        await commitReport(octokit, `CPU Usage (%): ${perc}`)
-
-        createComment(octokit, perc);
+        const data = `
+        {
+        "cpu": ${perc}
+        }`
+        await commitReport(octokit, data)
+        const difference = compareToOld(data);
+        createComment(octokit, difference);
     });
 
 } catch (error) {
