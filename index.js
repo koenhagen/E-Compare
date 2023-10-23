@@ -27,7 +27,7 @@ async function compareToOld(new_data) {
         const old_data = await fs.readFile('.energy.json', 'utf8');
         console.log(`Old data: ${old_data}`);
         console.log(`New data: ${new_data}`);
-        return old_data / new_data;
+        return old_data['cpu'] / new_data['cpu'];
     } catch (err) {
         console.error(err);
         return null;
@@ -35,29 +35,44 @@ async function compareToOld(new_data) {
 }
 
 async function commitReport(octokit, article) {
-    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
-    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const sha = github.context.sha;
-    const branch = github.context.payload.pull_request.head.ref;
-    const path = ".energy.json";
-    const message = "Add power report";
+    const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
 
-    try {
-        const result = await octokit.rest.repos.createOrUpdateFileContents({
-            owner: owner,
-            repo: repo,
-            path: path,
-            message: message,
-            content: Base64.encode(article),
-            sha: sha,
-            branch: branch,
-        });
-
-        console.log(`commitReport Result: ${result.data}`);
-    } catch (error) {
-        console.error(error);
-    }
+    await octokit.rest.repos.createOrUpdateFileContents({
+        owner: owner,
+        repo: repo,
+        path: ".energy.json",
+        message: `Add power report`,
+        content: Base64.encode(article),
+        sha,
+        branch: github.context.payload.pull_request.head.ref
+    }).then(result => console.log(`result ${result.data}`))
 }
+
+// async function commitReport(octokit, article) {
+//     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+//     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+//     const sha = github.context.sha;
+//     const branch = github.context.payload.pull_request.head.ref;
+//     const path = ".energy.json";
+//     const message = "Add power report";
+//
+//     try {
+//         const result = await octokit.rest.repos.createOrUpdateFileContents({
+//             owner: owner,
+//             repo: repo,
+//             path: path,
+//             message: message,
+//             content: Base64.encode(article),
+//             sha: sha,
+//             branch: branch,
+//         });
+//
+//         console.log(`commitReport Result: ${result.data}`);
+//     } catch (error) {
+//         console.error(error);
+//     }
+// }
 
 async function measureCpuUsage() {
     const cpus = os.cpus();
