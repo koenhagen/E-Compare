@@ -3,75 +3,111 @@ const {exec} = require('child_process');
 const os = require('os');
 const github = require('@actions/github');
 const {Base64} = require("js-base64");
-const { promises: fs } = require('fs')
+const {promises: fs} = require('fs');
 
-function createComment(octokit, perc) {
-    octokit.rest.issues.createComment({
-        ...github.context.repo,
-        issue_number: github.context.payload.pull_request.number,
-        body: `The power usage is: ${perc}%`
-    }).then(result => console.log(`result ${result.data}`))
+async function createComment(octokit, perc) {
+    const issueNumber = github.context.payload.pull_request.number;
+    const body = `The power usage is: ${perc}%`;
+
+    try {
+        const result = await octokit.rest.issues.createComment({
+            ...github.context.repo,
+            issue_number: issueNumber,
+            body: body,
+        });
+
+        console.log(`Result: ${result.data}`);
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 async function commitReport(octokit, article) {
+    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const sha = github.context.sha;
-    const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+    const branch = github.context.payload.pull_request.head.ref;
+    const path = ".energy.json";
+    const message = "Add power report";
 
-    await octokit.rest.repos.createOrUpdateFileContents({
-        owner: owner,
-        repo: repo,
-        path: ".energy.json",
-        message: `Add power report`,
-        content: Base64.encode(article),
-        sha,
-        branch: github.context.payload.pull_request.head.ref
-    }).then(result => console.log(`result ${result.data}`))
+    try {
+        const result = await octokit.rest.repos.createOrUpdateFileContents({
+            owner: owner,
+            repo: repo,
+            path: path,
+            message: message,
+            content: Base64.encode(article),
+            sha: sha,
+            branch: branch,
+        });
+
+        console.log(`Result: ${result.data}`);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function measureCpuUsage() {
+    const cpus = os.cpus();
+    const cpu = cpus[0];
+    const start = process.cpuUsage();
+
+    const unitTest = core.getInput('what-to-test');
+    return new Promise((resolve, reject) => {
+        exec(unitTest, (err) => {
+            if (err != null) {
+                console.log(`Error: ${err}`);
+                reject(err);
+            }
+
+            const total = Object.values(cpu.times).reduce((acc, tv) => acc + tv, 0);
+            const usage = process.cpuUsage(start);
+            const currentCPUUsage = (usage.user + usage.system) / 1000;
+            const perc = (currentCPUUsage / total) * 100;
+
+            console.log(Object.values(cpu.times));
+            console.log(`Total: ${total}`);
+            console.log(`CPU Usage (%): ${perc}`);
+            resolve(perc);
+        });
+    });
+}
+
+async function run() {
+    try {
+        const github_token = core.getInput('GITHUB_TOKEN');
+        if (!github_token) {
+            console.log('Error: No GitHub secrets access');
+            return core.setFailed('No GitHub secrets access');
+        }
+
+        const octokit = github.getOctokit(github_token);
+
+        const perc = await measureCpuUsage();
+        const data = `{
+      "cpu": ${perc}
+    }`;
+
+        await commitReport(octokit, data);
+        const difference = await compareToOld(data);
+
+        if (difference != null) {
+            await createComment(octokit, difference);
+        }
+    } catch (error) {
+        console.error(error);
+        core.setFailed(error.message);
+    }
 }
 
 async function compareToOld(new_data) {
-    const old_data = await fs.readFile('.energy.json', 'utf8');
-    return old_data / new_data;
+    try {
+        const old_data = await fs.readFile('.energy.json', 'utf8');
+        return old_data / new_data;
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
 }
 
-try {
-    const cpus = os.cpus();
-    const cpu = cpus[0];
-    start = process.cpuUsage();
-
-    const unitTest = core.getInput('what-to-test');
-    exec(unitTest, async (err) => {
-        if (err != null) {
-            console.log(`Error ${err}`);
-            return err;
-        }
-        const total = Object.values(cpu.times).reduce(
-            (acc, tv) => acc + tv, 0
-        );
-
-        const usage = process.cpuUsage();
-        const currentCPUUsage = (usage.user + usage.system) / 1000;
-
-        const perc = currentCPUUsage / total * 100;
-
-        console.log(Object.values(cpu.times));
-        console.log(`Total: ${total}`);
-        console.log(`CPU Usage (%): ${perc}`);
-
-        const github_token = core.getInput('GITHUB_TOKEN');
-        if (github_token === '' || !github_token) { //No GitHub secrets access
-            console.log(`Error: No GitHub secrets access`);
-            return
-        }
-        const octokit = github.getOctokit(github_token);
-        const data = `
-        {
-        "cpu": ${perc}
-        }`
-        await commitReport(octokit, data)
-        const difference = compareToOld(data);
-        createComment(octokit, difference);
-    });
-
-} catch (error) {
-    core.setFailed(error.message);
-}
+run();
