@@ -10148,6 +10148,17 @@ async function createComment(octokit, perc) {
     }
 }
 
+async function compareToOld(new_data) {
+    try {
+        const old_data = await fs.readFile('.energy.json', 'utf8');
+        console.log(`Old data: ${old_data}`);
+        return old_data / new_data;
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
 async function commitReport(octokit, article) {
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
@@ -10211,8 +10222,8 @@ async function run() {
 
         const perc = await measureCpuUsage();
         const data = `{
-      "cpu": ${perc}
-    }`;
+          "cpu": ${perc}
+        }`;
 
         await commitReport(octokit, data);
         const difference = await compareToOld(data);
@@ -10223,16 +10234,6 @@ async function run() {
     } catch (error) {
         console.error(error);
         core.setFailed(error.message);
-    }
-}
-
-async function compareToOld(new_data) {
-    try {
-        const old_data = await fs.readFile('.energy.json', 'utf8');
-        return old_data / new_data;
-    } catch (err) {
-        console.error(err);
-        return null;
     }
 }
 
