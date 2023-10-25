@@ -86,15 +86,19 @@ async function measureCpuUsage() {
     });
 }
 
+function retrieveOctokit() {
+    const github_token = core.getInput('GITHUB_TOKEN');
+    if (!github_token) {
+        console.log('Error: No GitHub secrets access');
+        return core.setFailed('No GitHub secrets access');
+    }
+
+    return github.getOctokit(github_token);
+}
+
 async function run() {
     try {
-        const github_token = core.getInput('GITHUB_TOKEN');
-        if (!github_token) {
-            console.log('Error: No GitHub secrets access');
-            return core.setFailed('No GitHub secrets access');
-        }
-
-        const octokit = github.getOctokit(github_token);
+        const octokit = retrieveOctokit()
 
         const perc = await measureCpuUsage();
         const data = {
