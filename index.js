@@ -24,7 +24,7 @@ async function createComment(octokit, perc) {
 
 async function compareToOld(new_data) {
     try {
-        const old_data = await fs.readFile('.energy.md', 'utf8');
+        const old_data = JSON.parse(await fs.readFile('.energy.md', 'utf8'));
         console.log(`Old data: ${old_data}`);
         console.log(`New data: ${new_data}`);
         return old_data['cpu'] / new_data['cpu'];
@@ -96,9 +96,9 @@ async function run() {
         const octokit = github.getOctokit(github_token);
 
         const perc = await measureCpuUsage();
-        const data = `{
-          "cpu": ${perc}
-        }`;
+        const data = {
+          "cpu": perc
+        };
 
         await commitReport(octokit, data);
         const difference = await compareToOld(data);
