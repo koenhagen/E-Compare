@@ -10151,8 +10151,8 @@ async function createComment(octokit, perc) {
 async function compareToOld(new_data) {
     try {
         const old_data = JSON.parse(await fs.readFile('.energy.md', 'utf8'));
-        console.log(`Old data: ${old_data}`);
-        console.log(`New data: ${new_data}`);
+        console.log(`Old data: ${old_data['cpu']}`);
+        console.log(`New data: ${new_data['cpu']}`);
         return old_data['cpu'] / new_data['cpu'];
     } catch (err) {
         console.error(err);
@@ -10160,7 +10160,8 @@ async function compareToOld(new_data) {
     }
 }
 
-async function commitReport(octokit, article) {
+async function commitReport(octokit, content) {
+    console.log(`Committing report: ${content}`);
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const sha = github.context.sha;
@@ -10174,7 +10175,7 @@ async function commitReport(octokit, article) {
             repo: repo,
             path: path,
             message: message,
-            content: Base64.encode(article),
+            content: Base64.encode(content),
             sha: sha,
             branch: branch,
         });
