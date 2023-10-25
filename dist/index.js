@@ -10142,9 +10142,21 @@ async function createComment(octokit, perc) {
             body: body,
         });
 
-        console.log(`Result: ${result.data}`);
+        console.log(`createComment Result: ${result.data}`);
     } catch (error) {
         console.error(error);
+    }
+}
+
+async function compareToOld(new_data) {
+    try {
+        const old_data = await fs.readFile('.energy.md', 'utf8');
+        console.log(`Old data: ${old_data}`);
+        console.log(`New data: ${new_data}`);
+        return old_data['cpu'] / new_data['cpu'];
+    } catch (err) {
+        console.error(err);
+        return null;
     }
 }
 
@@ -10153,7 +10165,7 @@ async function commitReport(octokit, article) {
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const sha = github.context.sha;
     const branch = github.context.payload.pull_request.head.ref;
-    const path = ".energy.json";
+    const path = ".energy.md";
     const message = "Add power report";
 
     try {
@@ -10167,7 +10179,7 @@ async function commitReport(octokit, article) {
             branch: branch,
         });
 
-        console.log(`Result: ${result.data}`);
+        console.log(`commitReport Result: ${result.data}`);
     } catch (error) {
         console.error(error);
     }
@@ -10182,7 +10194,7 @@ async function measureCpuUsage() {
     return new Promise((resolve, reject) => {
         exec(unitTest, (err) => {
             if (err != null) {
-                console.log(`Error: ${err}`);
+                console.log(`Execution Error: ${err}`);
                 reject(err);
             }
 
@@ -10211,8 +10223,8 @@ async function run() {
 
         const perc = await measureCpuUsage();
         const data = `{
-      "cpu": ${perc}
-    }`;
+          "cpu": ${perc}
+        }`;
 
         await commitReport(octokit, data);
         const difference = await compareToOld(data);
@@ -10223,16 +10235,6 @@ async function run() {
     } catch (error) {
         console.error(error);
         core.setFailed(error.message);
-    }
-}
-
-async function compareToOld(new_data) {
-    try {
-        const old_data = await fs.readFile('.energy.json', 'utf8');
-        return old_data / new_data;
-    } catch (err) {
-        console.error(err);
-        return null;
     }
 }
 
