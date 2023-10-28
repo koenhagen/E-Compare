@@ -35,7 +35,7 @@ async function compareToOld(new_data) {
 }
 
 async function commitReport(octokit, content) {
-    console.log(`Committing report: ${content.toString()}`);
+    console.log(`Committing report: ${JSON.stringify(content)}`);
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const sha = github.context.sha;
@@ -49,14 +49,14 @@ async function commitReport(octokit, content) {
             repo: repo,
             path: path,
             message: message,
-            content: Base64.encode(content.toString()),
+            content: Base64.encode(JSON.stringify(content)),
             sha: sha,
             branch: branch,
         });
 
         console.log(`commitReport Result: ${result.data}`);
     } catch (error) {
-        console.error(error);
+        console.error(`Error while adding report: ${error}`);
     }
 }
 
