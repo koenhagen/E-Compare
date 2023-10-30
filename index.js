@@ -24,9 +24,9 @@ async function createComment(octokit, perc) {
 
 async function compareToOld(new_data) {
     try {
-        const old_data = await fs.readFile('.energy.md', 'utf8');
-        console.log(`Old data: ${old_data}`);
-        console.log(`New data: ${new_data}`);
+        const old_data = JSON.parse(await fs.readFile('.energy.json', 'utf8'));
+        console.log(`Old data: ${old_data['cpu']}`);
+        console.log(`New data: ${new_data['cpu']}`);
         return old_data['cpu'] / new_data['cpu'];
     } catch (err) {
         console.error(err);
@@ -34,13 +34,19 @@ async function compareToOld(new_data) {
     }
 }
 
-async function commitReport(octokit, article) {
+async function commitReport(octokit, content) {
+    console.log(`Committing report: ${JSON.stringify(content)}`);
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-    const sha = github.context.sha;
+    // const sha = github.context.sha;
     const branch = github.context.payload.pull_request.head.ref;
-    const path = ".energy.md";
+    const path = 'energy.json';
     const message = "Add power report";
+
+    const put_ob_01 = {
+        owner: owner, repo: repo, file_path: path, branch: "main"
+    };
+    const sha = await octokit.request('GET /repos/{owner}/{repo}/contents/.energy.json', put_ob_01).data.sha;
 
     try {
         const result = await octokit.rest.repos.createOrUpdateFileContents({
@@ -48,14 +54,14 @@ async function commitReport(octokit, article) {
             repo: repo,
             path: path,
             message: message,
-            content: Base64.encode(article),
+            content: Base64.encode(JSON.stringify(content)),
             sha: sha,
             branch: branch,
         });
 
         console.log(`commitReport Result: ${result.data}`);
     } catch (error) {
-        console.error(error);
+        console.error(`Error while adding report: ${error}`);
     }
 }
 
@@ -85,20 +91,24 @@ async function measureCpuUsage() {
     });
 }
 
+function retrieveOctokit() {
+    const github_token = core.getInput('GITHUB_TOKEN');
+    if (!github_token) {
+        console.log('Error: No GitHub secrets access');
+        return core.setFailed('No GitHub secrets access');
+    }
+
+    return github.getOctokit(github_token);
+}
+
 async function run() {
     try {
-        const github_token = core.getInput('GITHUB_TOKEN');
-        if (!github_token) {
-            console.log('Error: No GitHub secrets access');
-            return core.setFailed('No GitHub secrets access');
-        }
-
-        const octokit = github.getOctokit(github_token);
+        const octokit = retrieveOctokit()
 
         const perc = await measureCpuUsage();
-        const data = `{
-          "cpu": ${perc}
-        }`;
+        const data = {
+          "cpu": perc
+        };
 
         await commitReport(octokit, data);
         const difference = await compareToOld(data);
