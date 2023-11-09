@@ -75,6 +75,8 @@ async function commitReport(octokit, content) {
     } catch (error) {
     }
 
+    console.log(sha);
+
     try {
         const result = await octokit.rest.repos.createOrUpdateFileContents({
             owner: owner,
@@ -82,7 +84,7 @@ async function commitReport(octokit, content) {
             path: path,
             message: message,
             content: Base64.encode(JSON.stringify(content)),
-            // sha: sha,
+            sha: sha,
             branch: branch,
         });
 
