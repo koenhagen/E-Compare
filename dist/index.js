@@ -10188,20 +10188,12 @@ async function commitReport(octokit, content) {
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     // const branch = github.context.payload.pull_request.head.ref;
-    const path = '.energy/energy.json';
+    const path = `.energy/${Math.random()}.json`;
     const message = "Add power report";
     const branch = "main";
     const object = {
         owner: owner, repo: repo, file_path: path, branch: branch
     };
-
-    let sha = '';
-    try {
-        sha = await octokit.request('GET /repos/{owner}/{repo}/contents/.energy/energy.json', object).data.sha;
-    } catch (error) {
-    }
-
-    console.log(sha);
 
     try {
         const result = await octokit.rest.repos.createOrUpdateFileContents({
@@ -10210,7 +10202,6 @@ async function commitReport(octokit, content) {
             path: path,
             message: message,
             content: Base64.encode(JSON.stringify(content)),
-            sha: sha,
             branch: branch,
         });
 
