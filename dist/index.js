@@ -10197,7 +10197,7 @@ async function commitReport(octokit, content) {
 
     let sha = '';
     try {
-        sha = await octokit.request('GET /repos/{owner}/{repo}/contents/.energy.json', object).data.sha;
+        sha = await octokit.request('GET /repos/{owner}/{repo}/contents/.energy/energy.json', object).data.sha;
     } catch (error) {
     }
 
