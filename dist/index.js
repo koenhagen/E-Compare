@@ -10158,7 +10158,13 @@ async function compareToOld(new_data, octokit) {
 
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-    const basehead = `${github.context.payload.pull_request.head.ref}...${github.context.payload.pull_request.base.ref}`
+    const basehead = `${github.context.payload.pull_request.base.ref}...${github.context.payload.pull_request.head.ref}`
+
+    console.log('owner: ' + owner);
+    console.log('repo: ' + repo);
+    console.log('basehead: ' + basehead);
+    console.log(github.context.payload.pull_request.head.ref);
+    console.log(github.context.payload.pull_request.base.ref);
 
     const response = await octokit.request(`GET /repos/{owner}/{repo}/compare/{basehead}`, {
         owner: owner,
