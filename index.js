@@ -68,7 +68,7 @@ async function commitReport(octokit, content) {
         owner: owner, repo: repo, file_path: path, branch: "main"
     };
 
-    let sha = null;
+    let sha = '';
     try {
         sha = await octokit.request('GET /repos/{owner}/{repo}/contents/.energy.json', object).data.sha;
     } catch (error) {
