@@ -59,11 +59,6 @@ async function compareToOld(new_data, octokit) {
 
 async function commitReport(octokit, content) {
     console.log(`Committing report: ${JSON.stringify(content)}`);
-    console.log('github.context.payload');
-    console.log(github.context.payload);
-    console.log(github.context.payload.pull_request);
-    console.log(github.context.payload.pull_request.head);
-    console.log(github.context.payload.pull_request.head.ref);
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const branch = github.context.payload.pull_request.head.ref;
@@ -72,8 +67,12 @@ async function commitReport(octokit, content) {
     const object = {
         owner: owner, repo: repo, file_path: path, branch: "main"
     };
-    const sha = await octokit.request('GET /repos/{owner}/{repo}/contents/.energy.json', object).data.sha;
 
+    let sha = null;
+    try {
+        sha = await octokit.request('GET /repos/{owner}/{repo}/contents/.energy.json', object).data.sha;
+    } catch (error) {
+    }
 
     try {
         const result = await octokit.rest.repos.createOrUpdateFileContents({
