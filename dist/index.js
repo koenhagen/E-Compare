@@ -10187,7 +10187,7 @@ async function commitReport(octokit, content) {
     console.log(`Committing report: ${JSON.stringify(content)}`);
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-    const branch = github.context.payload.pull_request.head.ref;
+    // const branch = github.context.payload.pull_request.head.ref;
     const path = '.energy/energy.json';
     const message = "Add power report";
     const object = {
@@ -10208,7 +10208,7 @@ async function commitReport(octokit, content) {
             message: message,
             content: Base64.encode(JSON.stringify(content)),
             sha: sha,
-            branch: branch,
+            // branch: branch,
         });
 
         console.log(`commitReport Result: ${result.data}`);
