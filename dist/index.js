@@ -10148,7 +10148,7 @@ async function createComment(octokit, perc) {
     }
 }
 
-async function compareToOld(new_data, octokit) {
+async function compareToOld(octokit, new_data) {
     // exec(`git merge-base --fork-point ${github.context.payload.pull_request.head.ref}`, (err, stdout) => {
     //     if (err != null) {
     //         console.log(`Lookup fork point fail: ${err}`);
@@ -10159,12 +10159,6 @@ async function compareToOld(new_data, octokit) {
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const basehead = `${github.context.payload.pull_request.base.ref}...${github.context.payload.pull_request.head.ref}`
-
-    console.log('owner: ' + owner);
-    console.log('repo: ' + repo);
-    console.log('basehead: ' + basehead);
-    console.log(github.context.payload.pull_request.head.ref);
-    console.log(github.context.payload.pull_request.base.ref);
 
     const response = await octokit.request(`GET /repos/{owner}/{repo}/compare/{basehead}`, {
         owner: owner,
@@ -10196,8 +10190,9 @@ async function commitReport(octokit, content) {
     // const branch = github.context.payload.pull_request.head.ref;
     const path = '.energy/energy.json';
     const message = "Add power report";
+    const branch = "main";
     const object = {
-        owner: owner, repo: repo, file_path: path, branch: "main"
+        owner: owner, repo: repo, file_path: path, branch: branch
     };
 
     let sha = '';
@@ -10214,7 +10209,7 @@ async function commitReport(octokit, content) {
             message: message,
             content: Base64.encode(JSON.stringify(content)),
             sha: sha,
-            // branch: branch,
+            branch: branch,
         });
 
         console.log(`commitReport Result: ${result.data}`);
@@ -10267,7 +10262,7 @@ async function run() {
         };
 
         await commitReport(octokit, data);
-        const difference = await compareToOld(data);
+        const difference = await compareToOld(octokit, data);
 
         if (difference != null) {
             await createComment(octokit, difference);
