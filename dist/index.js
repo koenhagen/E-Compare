@@ -10148,9 +10148,32 @@ async function createComment(octokit, perc) {
     }
 }
 
-async function compareToOld(new_data) {
+async function compareToOld(new_data, octokit) {
+    // exec(`git merge-base --fork-point ${github.context.payload.pull_request.head.ref}`, (err, stdout) => {
+    //     if (err != null) {
+    //         console.log(`Lookup fork point fail: ${err}`);
+    //     }
+    //     console.log(stdout);
+    // });
+
+    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+    const basehead = `${github.context.payload.pull_request.head.ref}...${github.context.payload.pull_request.base.ref}`
+
+    const response = await octokit.request(`GET /repos/{owner}/{repo}/compare/{basehead}`, {
+        owner: owner,
+        repo: repo,
+        basehead: basehead,
+        headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+        }
+    })
+
+    console.log(response);
+    console.log(response['merge_base_commit']);
+
     try {
-        const old_data = JSON.parse(await fs.readFile('.energy.json', 'utf8'));
+        const old_data = JSON.parse(await fs.readFile('./energy/energy.json', 'utf8'));
         console.log(`Old data: ${old_data['cpu']}`);
         console.log(`New data: ${new_data['cpu']}`);
         return old_data['cpu'] / new_data['cpu'];
@@ -10164,17 +10187,16 @@ async function commitReport(octokit, content) {
     console.log(`Committing report: ${JSON.stringify(content)}`);
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-    console.log('github.context.payload');
-    console.log(github.context.payload);
-    // const sha = github.context.sha;
     const branch = github.context.payload.pull_request.head.ref;
-    const path = 'energy.json';
+    const path = '.energy/energy.json';
     const message = "Add power report";
-
-    const put_ob_01 = {
+    const object = {
         owner: owner, repo: repo, file_path: path, branch: "main"
     };
-    const sha = await octokit.request('GET /repos/{owner}/{repo}/contents/.energy.json', put_ob_01).data.sha;
+    const sha = await octokit.request('GET /repos/{owner}/{repo}/contents/.energy.json', object).data.sha;
+
+    console.log('github.context.payload');
+    console.log(github.context.payload);
 
     try {
         const result = await octokit.rest.repos.createOrUpdateFileContents({
@@ -10202,7 +10224,7 @@ async function measureCpuUsage() {
     return new Promise((resolve, reject) => {
         exec(unitTest, (err) => {
             if (err != null) {
-                console.log(`Execution Error: ${err}`);
+                console.log(`Measure CPU Usage fail: ${err}`);
                 reject(err);
             }
 
@@ -10211,8 +10233,6 @@ async function measureCpuUsage() {
             const currentCPUUsage = (usage.user + usage.system) / 1000;
             const perc = (currentCPUUsage / total) * 100;
 
-            console.log(Object.values(cpu.times));
-            console.log(`Total: ${total}`);
             console.log(`CPU Usage (%): ${perc}`);
             resolve(perc);
         });
@@ -10235,7 +10255,7 @@ async function run() {
 
         const perc = await measureCpuUsage();
         const data = {
-          "cpu": perc
+            "cpu": perc
         };
 
         await commitReport(octokit, data);
