@@ -10257,7 +10257,7 @@ async function run() {
         // await commitReport(octokit, data);
 
         // If this is not a pull request, then we are done
-        if (github.context.payload.pull_request === undefined) {
+        if (github.context.payload.pull_request !== undefined) {
             const difference = await compareToOld(octokit, data);
             if (difference != null) {
                 await createComment(octokit, difference);
