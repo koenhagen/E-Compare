@@ -10131,9 +10131,12 @@ const github = __nccwpck_require__(3922);
 const {Base64} = __nccwpck_require__(3439);
 const {promises: fs} = __nccwpck_require__(7147);
 
-async function createComment(octokit, perc) {
-    const issueNumber = github.context.payload.pull_request.number;
-    const body = `The power usage is: ${perc}%`;
+async function createComment(octokit, data, difference, pull_request) {
+    const issueNumber = pull_request.number;
+    let body = `The power usage is: ${data['cpu']}%`;
+    if (difference !== null) {
+        body += `\n\nThis is ${difference}% more than the base branch.`;
+    }
 
     try {
         const result = await octokit.rest.issues.createComment({
@@ -10148,42 +10151,40 @@ async function createComment(octokit, perc) {
     }
 }
 
-async function compareToOld(octokit, new_data) {
-    // exec(`git merge-base --fork-point ${github.context.payload.pull_request.head.ref}`, (err, stdout) => {
-    //     if (err != null) {
-    //         console.log(`Lookup fork point fail: ${err}`);
-    //     }
-    //     console.log(stdout);
-    // });
-
-    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
-    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-    const basehead = `${github.context.payload.pull_request.base.ref}...${github.context.payload.pull_request.head.ref}`
-    console.log(`repo ${repo}`)
-    console.log(`owner ${owner}`)
-    console.log(`basehead ${basehead}`)
-
-    const response = await octokit.request(`GET /repos/{owner}/{repo}/compare/{basehead}`, {
-        owner: owner,
-        repo: repo,
-        basehead: basehead,
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-        }
-    })
-
-    console.log(response);
-    console.log(response['merge_base_commit']);
-
+async function getForkPoint(pull_request, octokit) {
     try {
-        const old_data = JSON.parse(await fs.readFile('./energy/energy.json', 'utf8'));
-        console.log(`Old data: ${old_data['cpu']}`);
-        console.log(`New data: ${new_data['cpu']}`);
-        return old_data['cpu'] / new_data['cpu'];
-    } catch (err) {
-        console.error(err);
+        const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+        const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+        const basehead = `${pull_request.base.ref}...${pull_request.head.ref}`
+
+        const response = await octokit.request(`GET /repos/{owner}/{repo}/compare/{basehead}`, {
+            owner: owner,
+            repo: repo,
+            basehead: basehead,
+            headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
+            }
+        })
+        return response.data.merge_base_commit.sha;
+    } catch (error) {
+        console.error(`Could not find fork point: ${error}`);
         return null;
     }
+}
+
+async function getMeasurementsFromRepo(sha) {
+    try {
+        return JSON.parse(await fs.readFile(`./energy/${sha}.json`, 'utf8'));
+    } catch (error) {
+        console.error(`Could not find old measurements: ${error}`);
+        return null;
+    }
+}
+
+async function compareToOld(octokit, new_data, old_data) {
+    console.log(`Old data: ${old_data['cpu']}`);
+    console.log(`New data: ${new_data['cpu']}`);
+    return old_data['cpu'] / new_data['cpu'];
 }
 
 async function commitReport(octokit, content) {
@@ -10191,7 +10192,9 @@ async function commitReport(octokit, content) {
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     // const branch = github.context.payload.pull_request.head.ref;
-    const path = `.energy/${Math.random()}.json`;
+    console.log('github.context.payload.head_commit.id');
+    console.log(github.context.payload.head_commit.id);
+    const path = `.energy/${github.context.payload.head_commit.id}.json`;
     const message = "Add power report";
     const branch = "main";
 
@@ -10238,11 +10241,28 @@ async function measureCpuUsage() {
 function retrieveOctokit() {
     const github_token = core.getInput('GITHUB_TOKEN');
     if (!github_token) {
-        console.log('Error: No GitHub secrets access');
+        console.error('Error: No GitHub secrets access');
         return core.setFailed('No GitHub secrets access');
     }
-
     return github.getOctokit(github_token);
+}
+
+async function getPullRequest(octokit, sha) {
+    try {
+        const result = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            commit_sha: sha
+        });
+        const pull_request = result.data.filter(({state}) => state === 'open');
+        if (pull_request.length === 0) {
+            return null;
+        }
+        return pull_request[0];
+    } catch (error) {
+        console.error(`Could not find pull request: ${error}`);
+        return null;
+    }
 }
 
 async function run() {
@@ -10254,15 +10274,23 @@ async function run() {
             "cpu": perc
         };
 
-        // await commitReport(octokit, data);
+        await commitReport(octokit, data);
 
-        // If this is not a pull request, then we are done
-        if (github.context.payload.pull_request !== undefined) {
-            const difference = await compareToOld(octokit, data);
-            if (difference != null) {
-                await createComment(octokit, difference);
-            }
+        const pull_request = await getPullRequest(octokit, github.context.sha);
+        console.log(`Pull request: ${pull_request}`);
+        if (pull_request === null) {
+            return;
         }
+        const sha = await getForkPoint(pull_request, octokit);
+        if (sha === null) {
+            return;
+        }
+        const old_data = await getMeasurementsFromRepo(sha);
+        if (old_data === null) {
+            await createComment(octokit, data, null, pull_request);
+        }
+        const difference = await compareToOld(octokit, data, old_data);
+        await createComment(octokit, data, difference, pull_request);
 
     } catch (error) {
         console.error(error);
