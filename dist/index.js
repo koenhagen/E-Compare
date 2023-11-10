@@ -10167,12 +10167,10 @@ async function compareToOld(octokit, new_data, pull_request) {
     })
 
     console.log(response);
-    console.log(response['merge_base_commit']);
-    console.log(response.merge_base_commit);
-    console.log(response.merge_base_commit.sha);
+    console.log(response.data.merge_base_commit.sha);
 
     try {
-        const old_data = JSON.parse(await fs.readFile(`./energy/${response.merge_base_commit.sha}.json`, 'utf8'));
+        const old_data = JSON.parse(await fs.readFile(`./energy/${response.data.merge_base_commit.sha}.json`, 'utf8'));
         console.log(`Old data: ${old_data['cpu']}`);
         console.log(`New data: ${new_data['cpu']}`);
         return old_data['cpu'] / new_data['cpu'];
@@ -10187,9 +10185,9 @@ async function commitReport(octokit, content) {
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     // const branch = github.context.payload.pull_request.head.ref;
-    console.log('github.context.payload');
-    console.log(github.context.payload);
-    const path = `.energy/${Math.random()}.json`;
+    console.log('github.context.payload.head_commit.id');
+    console.log(github.context.payload.head_commit.id);
+    const path = `.energy/${github.context.payload.head_commit.id}.json`;
     const message = "Add power report";
     const branch = "main";
 
