@@ -137,6 +137,7 @@ async function run() {
         await commitReport(octokit, data);
 
         const pull_request = await getPullRequest(octokit, github.context.sha);
+        console.log(`Pull request: ${pull_request}`);
         // If this is not a pull request, then we are done
         if (pull_request !== null) {
 
