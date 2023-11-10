@@ -10288,9 +10288,10 @@ async function run() {
         const old_data = await getMeasurementsFromRepo(sha);
         if (old_data === null) {
             await createComment(octokit, data, null, pull_request);
+        } else {
+            const difference = await compareToOld(octokit, data, old_data);
+            await createComment(octokit, data, difference, pull_request);
         }
-        const difference = await compareToOld(octokit, data, old_data);
-        await createComment(octokit, data, difference, pull_request);
 
     } catch (error) {
         console.error(error);
