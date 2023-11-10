@@ -5,9 +5,9 @@ const github = require('@actions/github');
 const {Base64} = require("js-base64");
 const {promises: fs} = require('fs');
 
-async function createComment(octokit, perc) {
-    const issueNumber = github.context.payload.pull_request.number;
-    const body = `The power usage is: ${perc}%`;
+async function createComment(octokit, difference, pull_request) {
+    const issueNumber = pull_request.number;
+    const body = `The power usage is: ${difference}%`;
 
     try {
         const result = await octokit.rest.issues.createComment({
@@ -22,11 +22,11 @@ async function createComment(octokit, perc) {
     }
 }
 
-async function compareToOld(octokit, new_data) {
+async function compareToOld(octokit, new_data, pull_request) {
 
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-    const basehead = `${github.context.payload.pull_request.base.ref}...${github.context.payload.pull_request.head.ref}`
+    const basehead = `${pull_request.base.ref}...${pull_request.head.ref}`
     console.log(`repo ${repo}`)
     console.log(`owner ${owner}`)
     console.log(`basehead ${basehead}`)
@@ -113,8 +113,16 @@ function retrieveOctokit() {
         console.log('Error: No GitHub secrets access');
         return core.setFailed('No GitHub secrets access');
     }
-
     return github.getOctokit(github_token);
+}
+
+async function getPullRequest(octokit, sha) {
+    const result = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        commit_sha: sha
+    });
+    return result.data.filter(({state}) => state === 'open')[0];
 }
 
 async function run() {
@@ -128,11 +136,14 @@ async function run() {
 
         await commitReport(octokit, data);
 
+        const pull_request = await getPullRequest(octokit, github.context.sha);
         // If this is not a pull request, then we are done
-        if (github.context.payload.pull_request !== undefined) {
-            const difference = await compareToOld(octokit, data);
+        if (pull_request !== null) {
+
+
+            const difference = await compareToOld(octokit, data, pull_request);
             if (difference != null) {
-                await createComment(octokit, difference);
+                await createComment(octokit, difference, pull_request);
             }
         }
 

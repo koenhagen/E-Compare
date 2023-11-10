@@ -1,8 +1,6 @@
 name: run-energy-measurer
 
 on:
-  pull_request:
-    types: [opened, reopened, synchronize]
   push:
     branches: [main]
     paths-ignore:
@@ -22,7 +20,7 @@ jobs:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
-        
+
       - name: run-energy-measuring
         id: energy
         uses: ./
