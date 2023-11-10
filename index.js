@@ -39,6 +39,7 @@ async function getForkPoint(pull_request, octokit) {
                 'X-GitHub-Api-Version': '2022-11-28'
             }
         })
+        console.log(response.data.merge_base_commit.parents);
         return response.data.merge_base_commit.sha;
     } catch (error) {
         console.error(`Could not find fork point: ${error}`);
