@@ -10257,6 +10257,9 @@ async function run() {
         await commitReport(octokit, data);
 
         // If this is not a pull request, then we are done
+
+        console.log(`Payload: ${github.context.payload}`);
+        console.log(`Payload: ${github.context.payload.pull_request}`);
         if (github.context.payload == null || github.context.payload.pull_request == null) {
             const difference = await compareToOld(octokit, data);
             if (difference != null) {
