@@ -128,13 +128,10 @@ async function run() {
             "cpu": perc
         };
 
-        await commitReport(octokit, data);
+        // await commitReport(octokit, data);
 
         // If this is not a pull request, then we are done
-
-        console.log(`Payload: ${github.context.payload}`);
-        console.log(`Payload: ${github.context.payload.pull_request}`);
-        if (github.context.payload == null || github.context.payload.pull_request == null) {
+        if (github.context.payload.pull_request === undefined) {
             const difference = await compareToOld(octokit, data);
             if (difference != null) {
                 await createComment(octokit, difference);
