@@ -38,7 +38,11 @@ async function getForkPoint(pull_request, octokit) {
             headers: {
                 'X-GitHub-Api-Version': '2022-11-28'
             }
-        })
+        });
+        console.log((response.data));
+        if (response.data.message === 'Add power report') {
+            return response.data.merge_base_commit.parents[0].sha;
+        }
         return response.data.merge_base_commit.sha;
     } catch (error) {
         console.error(`Could not find fork point: ${error}`);
@@ -162,9 +166,10 @@ async function run() {
         const old_data = await getMeasurementsFromRepo(sha);
         if (old_data === null) {
             await createComment(octokit, data, null, pull_request);
+        } else {
+            const difference = await compareToOld(octokit, data, old_data);
+            await createComment(octokit, data, difference, pull_request);
         }
-        const difference = await compareToOld(octokit, data, old_data);
-        await createComment(octokit, data, difference, pull_request);
 
     } catch (error) {
         console.error(error);
