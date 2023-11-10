@@ -10149,12 +10149,6 @@ async function createComment(octokit, perc) {
 }
 
 async function compareToOld(octokit, new_data) {
-    // exec(`git merge-base --fork-point ${github.context.payload.pull_request.head.ref}`, (err, stdout) => {
-    //     if (err != null) {
-    //         console.log(`Lookup fork point fail: ${err}`);
-    //     }
-    //     console.log(stdout);
-    // });
 
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
@@ -10174,9 +10168,11 @@ async function compareToOld(octokit, new_data) {
 
     console.log(response);
     console.log(response['merge_base_commit']);
+    console.log(response.merge_base_commit);
+    console.log(response.merge_base_commit.sha);
 
     try {
-        const old_data = JSON.parse(await fs.readFile('./energy/energy.json', 'utf8'));
+        const old_data = JSON.parse(await fs.readFile(`./energy/${response.merge_base_commit.sha}.json`, 'utf8'));
         console.log(`Old data: ${old_data['cpu']}`);
         console.log(`New data: ${new_data['cpu']}`);
         return old_data['cpu'] / new_data['cpu'];
@@ -10191,6 +10187,8 @@ async function commitReport(octokit, content) {
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     // const branch = github.context.payload.pull_request.head.ref;
+    console.log('github.context.payload');
+    console.log(github.context.payload);
     const path = `.energy/${Math.random()}.json`;
     const message = "Add power report";
     const branch = "main";
@@ -10254,7 +10252,7 @@ async function run() {
             "cpu": perc
         };
 
-        // await commitReport(octokit, data);
+        await commitReport(octokit, data);
 
         // If this is not a pull request, then we are done
         if (github.context.payload.pull_request !== undefined) {
