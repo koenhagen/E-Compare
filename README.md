@@ -37,7 +37,7 @@ with:
     - run: pip install pytest pytest-cov
     - uses: koenhagen/measure-energy-action@v0.7
       with:
-        what-to-test: pytest tests.py --doctest-modules --cov=com
+        run: pytest tests.py --doctest-modules --cov=com
 ```
 
 </td>
@@ -78,7 +78,7 @@ with:
 - run: npm run build --if-present
 - uses: koenhagen/measure-energy-action@v0.7
   with:
-    what-to-test: npm test
+    run: npm test
 ```
 
 </td>

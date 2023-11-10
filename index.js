@@ -90,7 +90,7 @@ async function measureCpuUsage() {
     const cpu = cpus[0];
     const start = process.cpuUsage();
 
-    const unitTest = core.getInput('what-to-test');
+    const unitTest = core.getInput('run');
     return new Promise((resolve, reject) => {
         exec(unitTest, (err) => {
             if (err != null) {

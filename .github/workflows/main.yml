@@ -1,11 +1,15 @@
 name: run-energy-measurer
 
 on:
-  pull_request:
-    types: [opened, reopened, synchronize]
+#  pull_request:
+#    types: [opened, reopened, synchronize]
   push:
-    branch:
-        - main
+    branches: [main]
+    paths-ignore:
+      - README.md
+      - CHANGELOG.md
+      - .gitignore
+      - .github/**
 jobs:
   measure-energy:
     runs-on: ubuntu-latest
@@ -14,6 +18,9 @@ jobs:
 #      pull-requests: write
     name: A job to measure energy
     steps:
+      - uses: 8BitJonny/gh-get-current-pr@2.2.0
+        id: PR
+      - run: echo "PR is ${{ steps.PR.outputs }}"
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
@@ -22,5 +29,5 @@ jobs:
         id: energy
         uses: ./
         with:
-          what-to-test: sleep 5
+          run: sleep 5
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

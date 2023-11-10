@@ -1,7 +1,7 @@
 name: 'Measure Energy'
 description: 'Measures energy in the background of your unit tests'
 inputs:
-  what-to-test:
+  run:
     description: 'Which command to measure the power usage of. Presumed to be unit tests'
     required: true
   GITHUB_TOKEN:
