@@ -10164,8 +10164,10 @@ async function getForkPoint(pull_request, octokit) {
             headers: {
                 'X-GitHub-Api-Version': '2022-11-28'
             }
-        })
-        console.log(response.data.merge_base_commit.parents);
+        });
+        if (response.data.merge_base_commit.message === 'Add power report') {
+            return response.data.merge_base_commit.parents[0].sha;
+        }
         return response.data.merge_base_commit.sha;
     } catch (error) {
         console.error(`Could not find fork point: ${error}`);
