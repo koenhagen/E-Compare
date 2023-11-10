@@ -68,9 +68,6 @@ async function commitReport(octokit, content) {
     const path = `.energy/${Math.random()}.json`;
     const message = "Add power report";
     const branch = "main";
-    const object = {
-        owner: owner, repo: repo, file_path: path, branch: branch
-    };
 
     try {
         const result = await octokit.rest.repos.createOrUpdateFileContents({
@@ -132,11 +129,15 @@ async function run() {
         };
 
         await commitReport(octokit, data);
-        const difference = await compareToOld(octokit, data);
 
-        if (difference != null) {
-            await createComment(octokit, difference);
+        // If this is not a pull request, then we are done
+        if (github.context.payload == null || github.context.payload.pull_request == null) {
+            const difference = await compareToOld(octokit, data);
+            if (difference != null) {
+                await createComment(octokit, difference);
+            }
         }
+
     } catch (error) {
         console.error(error);
         core.setFailed(error.message);
