@@ -51,7 +51,7 @@ async function getForkPoint(pull_request, octokit) {
 
 async function getMeasurementsFromRepo(sha) {
     try {
-        return JSON.parse(await fs.readFile(`./energy/${sha}.json`, 'utf8'));
+        return JSON.parse(await fs.readFile(`./.energy/${sha}.json`, 'utf8'));
     } catch (error) {
         console.error(`Could not find old measurements: ${error}`);
         return null;
@@ -65,7 +65,6 @@ async function compareToOld(octokit, new_data, old_data) {
 }
 
 async function commitReport(octokit, content) {
-    console.log(`Committing report: ${JSON.stringify(content)}`);
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const path = `.energy/${github.context.payload.head_commit.id}.json`;
@@ -73,7 +72,7 @@ async function commitReport(octokit, content) {
     const branch = "main";
 
     try {
-        const result = await octokit.rest.repos.createOrUpdateFileContents({
+        await octokit.rest.repos.createOrUpdateFileContents({
             owner: owner,
             repo: repo,
             path: path,
@@ -81,9 +80,8 @@ async function commitReport(octokit, content) {
             content: Base64.encode(JSON.stringify(content)),
             branch: branch,
         });
-
     } catch (error) {
-        console.error(`Error while adding report: ${error}`);
+        console.error(`Error while creating report: ${error}`);
     }
 }
 
@@ -133,7 +131,7 @@ async function getPullRequest(octokit, sha) {
         }
         return pull_request[0];
     } catch (error) {
-        console.error(`Could not find pull request: ${error}`);
+        console.error(`No pull request associated with push`);
         return null;
     }
 }
