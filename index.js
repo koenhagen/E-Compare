@@ -39,6 +39,7 @@ async function getForkPoint(pull_request, octokit) {
                 'X-GitHub-Api-Version': '2022-11-28'
             }
         });
+        console.log(`Response: ${JSON.stringify(response.data)}`);
         if (response.data.message === 'Add power report') {
             return response.data.merge_base_commit.parents[0].sha;
         }
