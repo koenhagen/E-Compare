@@ -10165,7 +10165,6 @@ async function getForkPoint(pull_request, octokit) {
                 'X-GitHub-Api-Version': '2022-11-28'
             }
         });
-        console.log((response.data));
         if (response.data.message === 'Add power report') {
             return response.data.merge_base_commit.parents[0].sha;
         }
@@ -10195,9 +10194,6 @@ async function commitReport(octokit, content) {
     console.log(`Committing report: ${JSON.stringify(content)}`);
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-    // const branch = github.context.payload.pull_request.head.ref;
-    console.log('github.context.payload.head_commit.id');
-    console.log(github.context.payload.head_commit.id);
     const path = `.energy/${github.context.payload.head_commit.id}.json`;
     const message = "Add power report";
     const branch = "main";
@@ -10212,7 +10208,6 @@ async function commitReport(octokit, content) {
             branch: branch,
         });
 
-        console.log(`commitReport Result: ${result.data}`);
     } catch (error) {
         console.error(`Error while adding report: ${error}`);
     }
@@ -10281,7 +10276,6 @@ async function run() {
         await commitReport(octokit, data);
 
         const pull_request = await getPullRequest(octokit, github.context.sha);
-        console.log(`Pull request: ${pull_request}`);
         if (pull_request === null) {
             return;
         }
