@@ -40,7 +40,9 @@ async function getForkPoint(pull_request, octokit) {
             }
         });
         console.log(`Response: ${JSON.stringify(response.data)}`);
-        if (response.data.message === 'Add power report') {
+        console.log(`${JSON.stringify(response.data.message)}`);
+        console.log(`${JSON.stringify(response.data.base_commit.message)}`);
+        if (response.data.base_commit.message === 'Add power report') {
             return response.data.merge_base_commit.parents[0].sha;
         }
         return response.data.merge_base_commit.sha;
