@@ -15,7 +15,14 @@ async function measureCpuUsage() {
                 console.log(`Measure CPU Usage fail: ${err}`);
                 reject(err);
             }
+            fs.readFile('./cpu-util.txt', 'utf8', function(err, data) {
+                console.log("The data from the file is: " + data);
+            })
             exec('cat ./cpu-util.txt | python3.10 xgb.py --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 | tee -a ./energy-total.txt > ./energy.txt');
+
+            fs.readFile('./energy.txt', 'utf8', function(err, data) {
+                console.log("The data from the file is: " + data);
+            })
         });
     });
 }
