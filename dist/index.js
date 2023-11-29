@@ -10157,7 +10157,7 @@ function retrieveOctokit() {
 
 function readEnergyData() {
     try {
-        const energy = fs.readFileSync("energy.txt", {encoding: 'utf-8', flag: 'r'});
+        const energy = fs.readFileSync("/tmp/energy.txt", {encoding: 'utf-8', flag: 'r'});
         const energy_numbers = energy.split('\n')
 
         let energy_sum = 0;
