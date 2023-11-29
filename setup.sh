@@ -24,4 +24,4 @@ fi
 git clone --depth 1 --single-branch --branch main https://github.com/green-coding-berlin/spec-power-model /tmp/spec-power-model
 gcc /tmp/spec-power-model/demo-reporter/cpu-utilization.c -o /tmp/demo-reporter
 chmod +x /tmp/demo-reporter
-/tmp/eco-ci/demo-reporter | tee -a /tmp/eco-ci/cpu-util-total.txt > /tmp/eco-ci/cpu-util.txt &
+/tmp/demo-reporter | tee -a /tmp/cpu-util-total.txt > /tmp/cpu-util.txt &
