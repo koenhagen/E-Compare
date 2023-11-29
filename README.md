@@ -84,3 +84,9 @@ with:
 </td>
 </tr>
 </table>
+
+
+killall -9 -q ./demo-reporter-exe || true
+./demo-reporter-exe | tee -a ./cpu-util-total.txt > ./cpu-util.txt &
+
+cat ./cpu-util.txt | python3.10 xgb.py --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make 'amd' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 | tee -a ./energy-total.txt > ./energy.txt
