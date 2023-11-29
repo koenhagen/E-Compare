@@ -9955,6 +9955,14 @@ module.exports = require("assert");
 
 /***/ }),
 
+/***/ 2081:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("child_process");
+
+/***/ }),
+
 /***/ 6113:
 /***/ ((module) => {
 
@@ -10117,9 +10125,26 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const core = __nccwpck_require__(1013);
+const {exec} = __nccwpck_require__(2081);
 const github = __nccwpck_require__(3922);
 const {Base64} = __nccwpck_require__(3439);
 const fs = __nccwpck_require__(7147);
+
+
+async function measureCpuUsage() {
+    exec('setup.sh');
+
+    const unitTest = core.getInput('run');
+    return new Promise((resolve, reject) => {
+        exec(unitTest, (err) => {
+            if (err != null) {
+                console.log(`Measure CPU Usage fail: ${err}`);
+                reject(err);
+            }
+            exec('cat ./cpu-util.txt | python3.10 xgb.py --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 | tee -a ./energy-total.txt > ./energy.txt');
+        });
+    });
+}
 
 function retrieveOctokit() {
     const github_token = core.getInput('GITHUB_TOKEN');
@@ -10244,7 +10269,7 @@ async function compareToOld(octokit, new_data, old_data) {
     return Math.round(((old_data['cpu'] / new_data['cpu'])+ Number.EPSILON) * 100) / 100
 }
 
-async function run() {
+async function run_post() {
     try {
         const octokit = retrieveOctokit();
         const energy_data = readEnergyData();
@@ -10273,7 +10298,18 @@ async function run() {
     }
 }
 
+async function run() {
+    try {
+        await measureCpuUsage();
+
+    } catch (error) {
+        console.error(error);
+        core.setFailed(error.message);
+    }
+}
+
 run();
+run_post();
 })();
 
 module.exports = __webpack_exports__;
