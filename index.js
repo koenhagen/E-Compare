@@ -1,30 +1,28 @@
 const core = require('@actions/core');
-const {exec} = require('child_process');
 const github = require("@actions/github");
 const {Base64} = require("js-base64");
-const fs = require("fs");
+const fs = require("fs").promises;
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 
 
 async function measureCpuUsage() {
-    exec('setup.sh');
+    await exec('setup.sh');
 
     const unitTest = core.getInput('run');
-    return new Promise((resolve, reject) => {
-        exec(unitTest, (err) => {
-            if (err != null) {
-                console.log(`Measure CPU Usage fail: ${err}`);
-                reject(err);
-            }
-            fs.readFile('/tmp/cpu-util.txt', 'utf8', function(err, data) {
-                console.log("The data from the file is: " + data);
-            })
-            exec('cat /tmp/cpu-util.txt | python3.10 xgb.py --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 | tee -a /tmp/energy-total.txt > /tmp/energy.txt');
 
-            fs.readFile('/tmp/energy.txt', 'utf8', function(err, data) {
-                console.log("The data from the file is: " + data);
-            })
-        });
-    });
+    await exec(unitTest);
+
+    const cpuUtilData = await fs.readFile('/tmp/cpu-util.txt', 'utf8');
+    console.log("The data from the file is: " + cpuUtilData);
+
+    await exec('cat /tmp/cpu-util.txt | python3.10 xgb.py --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 | tee -a /tmp/energy-total.txt > /tmp/energy.txt');
+
+    const energyData = await fs.readFile('/tmp/energy.txt', 'utf8');
+    console.log("The data from the file is: " + energyData);
+
+    // Resolve the promise
+    return Promise.resolve();
 }
 
 function retrieveOctokit() {

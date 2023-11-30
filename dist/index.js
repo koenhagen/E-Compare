@@ -10125,32 +10125,30 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const core = __nccwpck_require__(1013);
-const {exec} = __nccwpck_require__(2081);
 const github = __nccwpck_require__(3922);
 const {Base64} = __nccwpck_require__(3439);
-const fs = __nccwpck_require__(7147);
+const fs = (__nccwpck_require__(7147).promises);
+const util = __nccwpck_require__(3837);
+const exec = util.promisify((__nccwpck_require__(2081).exec));
 
 
 async function measureCpuUsage() {
-    exec('setup.sh');
+    await exec('setup.sh');
 
     const unitTest = core.getInput('run');
-    return new Promise((resolve, reject) => {
-        exec(unitTest, (err) => {
-            if (err != null) {
-                console.log(`Measure CPU Usage fail: ${err}`);
-                reject(err);
-            }
-            fs.readFile('/tmp/cpu-util.txt', 'utf8', function(err, data) {
-                console.log("The data from the file is: " + data);
-            })
-            exec('cat /tmp/cpu-util.txt | python3.10 xgb.py --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 | tee -a /tmp/energy-total.txt > /tmp/energy.txt');
 
-            fs.readFile('/tmp/energy.txt', 'utf8', function(err, data) {
-                console.log("The data from the file is: " + data);
-            })
-        });
-    });
+    await exec(unitTest);
+
+    const cpuUtilData = await fs.readFile('/tmp/cpu-util.txt', 'utf8');
+    console.log("The data from the file is: " + cpuUtilData);
+
+    await exec('cat /tmp/cpu-util.txt | python3.10 xgb.py --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 | tee -a /tmp/energy-total.txt > /tmp/energy.txt');
+
+    const energyData = await fs.readFile('/tmp/energy.txt', 'utf8');
+    console.log("The data from the file is: " + energyData);
+
+    // Resolve the promise
+    return Promise.resolve();
 }
 
 function retrieveOctokit() {
