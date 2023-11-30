@@ -10133,7 +10133,7 @@ const exec = util.promisify((__nccwpck_require__(2081).exec));
 
 
 async function measureCpuUsage() {
-    await exec('setup.sh');
+    await exec('./setup.sh');
 
     const unitTest = core.getInput('run');
 
