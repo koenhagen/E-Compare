@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Create a venv, and backup old
 python3 -m venv /tmp/eco-ci/venv
 

@@ -7,8 +7,8 @@ const exec = util.promisify(require('child_process').exec);
 
 
 async function measureCpuUsage() {
-    await exec('chmod -x ./setup.sh');
-    await exec('./setup.sh');
+    // await exec('chmod -x ./setup.sh');
+    await exec('sh setup.sh');
 
     const unitTest = core.getInput('run');
 
