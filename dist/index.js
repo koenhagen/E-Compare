@@ -10133,9 +10133,7 @@ const exec = util.promisify((__nccwpck_require__(2081).exec));
 
 
 async function measureCpuUsage() {
-    console.log("Running setup.sh");
     await exec('sh setup.sh');
-    console.log("Finished setup.sh");
 
     exec('killall -9 -q demo-reporter || true\n' +
         '/tmp/demo-reporter > /tmp/cpu-util.txt &');
@@ -10143,12 +10141,9 @@ async function measureCpuUsage() {
     const unitTest = core.getInput('run');
     console.log("Running unit test: " + unitTest);
     await exec(unitTest);
-    console.log("Finished unit test: " + unitTest);
     const cpuUtilData = fs.readFileSync('/tmp/cpu-util.txt', 'utf8');
-    console.log("The data from the file is: " + cpuUtilData);
-    console.log("Running xgb.py");
     await exec('cat /tmp/cpu-util.txt | python3.10 /tmp/spec-power-model/xgb.py --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 > /tmp/energy.txt');
-    console.log("Finished xgb.py");
+
     const energyData = fs.readFileSync('/tmp/energy.txt', 'utf8');
     console.log("The data from the file is: " + energyData);
 
@@ -10167,9 +10162,10 @@ function retrieveOctokit() {
 
 function readEnergyData() {
     try {
-        const energy = fs.readFileSync("/tmp/energy.txt", {encoding: 'utf-8', flag: 'r'});
+        const energy = fs.readFileSync("/tmp/energy.txt", {encoding: 'utf8', flag: 'r'});
         const energy_numbers = energy.split('\n');
-
+        console.log(energy);
+        console.log(energy_numbers);
         let energy_sum = 0;
         for (let i = 0; i < energy_numbers.length; i++) {
             energy_sum += Number(energy_numbers[i]);
