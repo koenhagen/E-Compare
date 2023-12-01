@@ -10147,7 +10147,7 @@ async function measureCpuUsage() {
     const cpuUtilData = fs.readFileSync('/tmp/cpu-util.txt', 'utf8');
     console.log("The data from the file is: " + cpuUtilData);
     console.log("Running xgb.py");
-    await exec('cat /tmp/cpu-util.txt | python3.10 xgb.py --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 | tee -a /tmp/energy-total.txt > /tmp/energy.txt');
+    await exec('cat /tmp/cpu-util.txt | python3.10 xgb.py --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 > /tmp/energy.txt');
     console.log("Finished xgb.py");
     const energyData = fs.readFileSync('/tmp/energy.txt', 'utf8');
     console.log("The data from the file is: " + energyData);
@@ -10186,7 +10186,7 @@ async function commitReport(octokit, content) {
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const path = `.energy/${github.context.payload.head_commit.id}.json`;
     const message = "Add power report";
-    const branch = "main";
+    const branch = "energy";
 
     try {
         await octokit.rest.repos.createOrUpdateFileContents({
