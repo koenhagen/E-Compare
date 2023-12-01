@@ -181,7 +181,7 @@ async function run_post() {
 async function run() {
     try {
         await measureCpuUsage();
-
+        await run_post();
     } catch (error) {
         console.error(error);
         core.setFailed(error.message);
@@ -189,4 +189,3 @@ async function run() {
 }
 
 run();
-run_post();

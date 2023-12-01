@@ -35,5 +35,5 @@ chmod +x /tmp/demo-reporter
 
 echo "Run demo-reporter"
 
-killall -9 -q /tmp/demo-reporter || true
+killall -9 -q demo-reporter || true
 /tmp/demo-reporter > /tmp/cpu-util.txt &
