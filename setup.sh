@@ -24,13 +24,8 @@ echo "Setup python"
 #  source $PREVIOUS_VENV/bin/activate
 #fi
 
-echo "Clone spec-power-model"
-
 git clone --depth 1 --single-branch --branch main https://github.com/green-coding-berlin/spec-power-model /tmp/spec-power-model
-
-echo "Compile demo-reporter"
+python3 -m pip install -r /tmp/spec-power-model/requirements.txt
 
 gcc /tmp/spec-power-model/demo-reporter/cpu-utilization.c -o /tmp/demo-reporter
 chmod +x /tmp/demo-reporter
-
-echo "Run demo-reporter"
