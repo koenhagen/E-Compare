@@ -10127,7 +10127,7 @@ var __webpack_exports__ = {};
 const core = __nccwpck_require__(1013);
 const github = __nccwpck_require__(3922);
 const {Base64} = __nccwpck_require__(3439);
-const fs = (__nccwpck_require__(7147).promises);
+const fs = __nccwpck_require__(7147);
 const util = __nccwpck_require__(3837);
 const exec = util.promisify((__nccwpck_require__(2081).exec));
 
@@ -10140,12 +10140,12 @@ async function measureCpuUsage() {
 
     await exec(unitTest);
 
-    const cpuUtilData = await fs.readFile('/tmp/cpu-util.txt', 'utf8');
+    const cpuUtilData = fs.readFileSync('/tmp/cpu-util.txt', 'utf8');
     console.log("The data from the file is: " + cpuUtilData);
 
     await exec('cat /tmp/cpu-util.txt | python3.10 xgb.py --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 | tee -a /tmp/energy-total.txt > /tmp/energy.txt');
 
-    const energyData = await fs.readFile('/tmp/energy.txt', 'utf8');
+    const energyData = fs.readFileSync('/tmp/energy.txt', 'utf8');
     console.log("The data from the file is: " + energyData);
 
     // Resolve the promise
@@ -10164,7 +10164,7 @@ function retrieveOctokit() {
 function readEnergyData() {
     try {
         const energy = fs.readFileSync("/tmp/energy.txt", {encoding: 'utf-8', flag: 'r'});
-        const energy_numbers = energy.split('\n')
+        const energy_numbers = energy.split('\n');
 
         let energy_sum = 0;
         for (let i = 0; i < energy_numbers.length; i++) {
