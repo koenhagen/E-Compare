@@ -10136,6 +10136,10 @@ async function measureCpuUsage() {
     console.log("Running setup.sh");
     await exec('sh setup.sh');
     console.log("Finished setup.sh");
+
+    exec('killall -9 -q demo-reporter || true\n' +
+        '/tmp/demo-reporter > /tmp/cpu-util.txt &');
+
     const unitTest = core.getInput('run');
     console.log("Running unit test: " + unitTest);
     await exec(unitTest);

@@ -34,6 +34,3 @@ gcc /tmp/spec-power-model/demo-reporter/cpu-utilization.c -o /tmp/demo-reporter
 chmod +x /tmp/demo-reporter
 
 echo "Run demo-reporter"
-
-killall -9 -q demo-reporter || true
-/tmp/demo-reporter > /tmp/cpu-util.txt &
