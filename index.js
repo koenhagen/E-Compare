@@ -73,6 +73,7 @@ async function createBranch(octokit) {
         console.log(`Branch ${branchref} already exists`);
         return branch;
     } catch (error) {
+        console.log(`Branch ${branch} does not exist`);
     }
 
     try {
@@ -173,7 +174,9 @@ async function getMeasurementsFromRepo(octokit, sha) {
 
 async function createComment(octokit, data, difference, pull_request) {
     const issueNumber = pull_request.number;
-    let body = `The power usage is: ${data['cpu']}%`;
+    let body = `⚡ The total energy is: ${data['total_energy']}\n
+    💪 The power is: ${data['power_avg']}\n
+    🕒 The duration is: ${data['duration']}`;
     if (difference !== null) {
         body += `\n\nThis is ${difference}% more than the base branch.`;
     }
