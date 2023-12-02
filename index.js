@@ -15,6 +15,7 @@ async function measureCpuUsage() {
     const unitTest = core.getInput('run');
     console.log("Running unit test: " + unitTest);
     await exec(unitTest);
+    await exec('killall -9 -q demo-reporter');
     await exec('cat /tmp/cpu-util.txt | python3.10 /tmp/spec-power-model/xgb.py --silent --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 > /tmp/energy.txt');
 
     const energyData = fs.readFileSync('/tmp/energy.txt', 'utf8');
