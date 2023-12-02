@@ -10338,12 +10338,14 @@ async function run() {
     try {
         await measureCpuUsage();
         await run_post();
+        return Promise.resolve();
     } catch (error) {
         console.error(error);
         core.setFailed(error.message);
     }
 }
 
+// noinspection JSIgnoredPromiseFromCall
 run();
 })();
 
