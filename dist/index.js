@@ -10141,7 +10141,6 @@ async function measureCpuUsage() {
     const unitTest = core.getInput('run');
     console.log("Running unit test: " + unitTest);
     await exec(unitTest);
-    const cpuUtilData = fs.readFileSync('/tmp/cpu-util.txt', 'utf8');
     await exec('cat /tmp/cpu-util.txt | python3.10 /tmp/spec-power-model/xgb.py --silent --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 > /tmp/energy.txt');
 
     const energyData = fs.readFileSync('/tmp/energy.txt', 'utf8');
@@ -10177,12 +10176,43 @@ function readEnergyData() {
     }
 }
 
+async function createBranch(octokit) {
+    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+    const branch = '.energy';
+    const ref = `refs/heads/${branch}`;
+
+    try {
+        // Check if branch exists
+        await octokit.rest.git.getRef({
+            owner: owner,
+            repo: repo,
+            ref: ref,
+        });
+        return branch;
+    } catch (error) {
+    }
+
+    try {
+        // Create branch
+        await octokit.rest.git.createRef({
+            owner: owner,
+            repo: repo,
+            ref: ref,
+            sha: github.context.sha,
+        });
+    } catch (error) {
+        console.error(`Error while creating branch: ${error}`);
+    }
+    return branch;
+}
+
 async function commitReport(octokit, content) {
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const path = `.energy/${github.context.payload.head_commit.id}.json`;
     const message = "Add power report";
-    const branch = "energy";
+    const branch = await createBranch(octokit);
 
     try {
         await octokit.rest.repos.createOrUpdateFileContents({
