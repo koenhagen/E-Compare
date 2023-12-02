@@ -10179,7 +10179,7 @@ function readEnergyData() {
 async function createBranch(octokit) {
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-    const branch = '.energy';
+    const branch = 'energy';
     const ref = `refs/heads/${branch}`;
 
     try {
