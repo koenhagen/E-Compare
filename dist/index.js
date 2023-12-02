@@ -10164,13 +10164,18 @@ function readEnergyData() {
     try {
         const energy = fs.readFileSync("/tmp/energy.txt", {encoding: 'utf8', flag: 'r'});
         const energy_numbers = energy.split('\n');
-        console.log(energy);
-        console.log(energy_numbers);
+
         let energy_sum = 0;
         for (let i = 0; i < energy_numbers.length; i++) {
             energy_sum += Number(energy_numbers[i]);
         }
-        return energy_sum;
+        const power_avg = energy_sum / energy_numbers.length;
+
+        return {
+            "total_energy": energy_sum,
+            "power_avg": power_avg,
+            "duration": energy_numbers.length
+        };
     } catch (error) {
         console.error(`Could not read data: ${error}`);
         return null;
@@ -10271,9 +10276,19 @@ async function getForkPoint(pull_request, octokit) {
     }
 }
 
-async function getMeasurementsFromRepo(sha) {
+async function getMeasurementsFromRepo(octokit, sha) {
     try {
-        return JSON.parse(fs.readFileSync(`./.energy/${sha}.json`, 'utf8'));
+        const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+        const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+        const path = `.energy/${sha}.json`;
+        const ref = `heads/energy`;
+        return await octokit.rest.repos.getContent({
+            owner,
+            repo,
+            path,
+            ref,
+        });
+        // return JSON.parse(fs.readFileSync(`./.energy/${sha}.json`, 'utf8'));
     } catch (error) {
         console.error(`Could not find old measurements: ${error}`);
         return null;
@@ -10310,10 +10325,7 @@ async function run_post() {
     try {
         const octokit = retrieveOctokit();
         const energy_data = readEnergyData();
-        const data = {
-            "cpu": energy_data
-        };
-        await commitReport(octokit, data);
+        await commitReport(octokit, energy_data);
 
         const pull_request = await getPullRequest(octokit, github.context.sha);
         if (pull_request === null) {
@@ -10323,12 +10335,12 @@ async function run_post() {
         if (sha === null) {
             return;
         }
-        const old_data = await getMeasurementsFromRepo(sha);
+        const old_data = await getMeasurementsFromRepo(octokit, sha);
         if (old_data === null) {
-            await createComment(octokit, data, null, pull_request);
+            await createComment(octokit, energy_data, null, pull_request);
         } else {
-            const difference = await compareToOld(octokit, data, old_data);
-            await createComment(octokit, data, difference, pull_request);
+            const difference = await compareToOld(octokit, energy_data, old_data);
+            await createComment(octokit, energy_data, difference, pull_request);
         }
     } catch (error) {
         core.setFailed(error.message);
