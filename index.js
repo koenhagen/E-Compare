@@ -64,11 +64,13 @@ async function createBranch(octokit) {
 
     try {
         // Check if branch exists
-        await octokit.rest.git.getRef({
+        const branchref = await octokit.rest.git.getRef({
             owner: owner,
             repo: repo,
             ref: ref,
         });
+
+        console.log(`Branch ${branchref} already exists`);
         return branch;
     } catch (error) {
     }
@@ -155,7 +157,7 @@ async function getMeasurementsFromRepo(octokit, sha) {
         const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
         const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
         const path = `.energy/${sha}.json`;
-        const ref = `heads/energy`;
+        const ref = `refs/heads/energy`;
         return await octokit.rest.repos.getContent({
             owner,
             repo,
