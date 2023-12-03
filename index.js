@@ -163,8 +163,11 @@ async function getMeasurementsFromRepo(octokit, sha) {
             path,
             ref,
         });
-        console.log(`Old data: ${oldData.data}`)
-        return JSON.parse(Base64.decode(String(oldData.data)));
+        console.log(`Old data: ${oldData.data}`);
+        console.log(`Old data: ${oldData.data[0]}`);
+        console.log(`Old data: ${oldData.data[0].data}`);
+        console.log(`Old data: ${oldData.data[0].content}`);
+        return JSON.parse(Base64.decode(String(oldData.data[0].content)));
         // return JSON.parse(fs.readFileSync(`./.energy/${sha}.json`, 'utf8'));
     } catch (error) {
         console.error(`Could not find old measurements: ${error}`);
