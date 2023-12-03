@@ -10298,11 +10298,15 @@ async function getMeasurementsFromRepo(octokit, sha) {
 
 async function createComment(octokit, data, difference, pull_request) {
     const issueNumber = pull_request.number;
-    let body = `⚡ The total energy is: ${data['total_energy']}\n
-    💪 The power is: ${data['power_avg']}\n
-    🕒 The duration is: ${data['duration']}`;
+    let body = `⚡ The total energy is: ${data['total_energy']}\n💪 The power is: ${data['power_avg']}\n🕒 The duration is: ${data['duration']}`;
     if (difference !== null) {
-        body += `\n\nThis is ${difference}% more than the base branch.`;
+        if (difference > -0.5 && difference < 0.5) {
+            body += '\n\nNo significant difference has been found compared to the base branch.';
+        } else if (difference > 0.5) {
+            body += `\n\nThis is ${Math.round((difference * 100) + Number.EPSILON)}% less than the base branch.`;
+        } else {
+            body += `\n\n\$\${\color{red}This is ${Math.round((difference * 100) + Number.EPSILON)}% more than the base branch.}\$\$`;
+        }
     }
 
     try {
@@ -10320,9 +10324,9 @@ async function compareToOld(octokit, new_data, old_data) {
     if (old_data === null) {
         return null;
     }
-    console.log(`Old data: ${old_data['cpu']}`);
-    console.log(`New data: ${new_data['cpu']}`);
-    return Math.round(((old_data['cpu'] / new_data['cpu']) + Number.EPSILON) * 100) / 100
+    console.log(`Old data: ${old_data['total_energy']}`);
+    console.log(`New data: ${new_data['total_energy']}`);
+    return Math.round(((old_data['total_energy'] / new_data['total_energy']) + Number.EPSILON) * 100) / 100
 }
 
 async function run() {
