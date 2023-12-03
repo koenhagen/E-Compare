@@ -10283,12 +10283,14 @@ async function getMeasurementsFromRepo(octokit, sha) {
         const path = `.energy/${sha}.json`;
         const ref = `energy`;
         console.log(`Getting measurements from ${path} in ${ref}`);
-        return await octokit.rest.repos.getContent({
+        const oldData = await octokit.rest.repos.getContent({
             owner,
             repo,
             path,
             ref,
         });
+        console.log(`Old data: ${oldData.data}`)
+        return JSON.parse(Base64.decode(String(oldData.data)));
         // return JSON.parse(fs.readFileSync(`./.energy/${sha}.json`, 'utf8'));
     } catch (error) {
         console.error(`Could not find old measurements: ${error}`);
@@ -10305,7 +10307,7 @@ async function createComment(octokit, data, difference, pull_request) {
         } else if (difference > 0.5) {
             body += `\n\nThis is ${Math.round((difference * 100) + Number.EPSILON)}% less than the base branch.`;
         } else {
-            body += `\n\n\$\${\color{red}This is ${Math.round((difference * 100) + Number.EPSILON)}% more than the base branch.}\$\$`;
+            body += `\n\nThis is <code style="color : red">${Math.round((difference * 100) + Number.EPSILON)}%</code> more than the base branch`;
         }
     }
 
