@@ -157,17 +157,16 @@ async function getMeasurementsFromRepo(octokit, sha) {
         const path = `.energy/${sha}.json`;
         const ref = `energy`;
         console.log(`Getting measurements from ${path} in ${ref}`);
-        const oldData = await octokit.rest.repos.getContent({
+        const result = await octokit.rest.repos.getContent({
             owner,
             repo,
             path,
             ref,
         });
+        const content = Buffer.from(result.data.content, 'base64').toString()
+        const oldData = JSON.parse(content);
         console.log(`Old data: ${oldData}`);
-        console.log(`Old data: ${oldData.data}`);
-        console.log(`Old data: ${Base64.decode(String(oldData))}`);
-        console.log(`Old data: ${Base64.decode(String(oldData.data))}`);
-        return JSON.parse(Base64.decode(String(oldData.data[0].content)));
+        return oldData;
         // return JSON.parse(fs.readFileSync(`./.energy/${sha}.json`, 'utf8'));
     } catch (error) {
         console.error(`Could not find old measurements: ${error}`);
