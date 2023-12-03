@@ -10186,20 +10186,17 @@ async function createBranch(octokit) {
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const branch = 'energy';
-    // const ref = `refs/heads/${branch}`;
 
     try {
         // Check if branch exists
-        const branchref = await octokit.rest.git.getRef({
+        await octokit.rest.git.getRef({
             owner: owner,
             repo: repo,
             ref: `/heads/${branch}`,
         });
-
-        console.log(`Branch ${branchref} already exists`);
         return branch;
     } catch (error) {
-        console.log(`Branch ${branch} does not exist`);
+        console.log(`Branch ${branch} does not exist. Creating new branch.`);
     }
 
     try {
@@ -10284,7 +10281,7 @@ async function getMeasurementsFromRepo(octokit, sha) {
         const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
         const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
         const path = `.energy/${sha}.json`;
-        const ref = `refs/heads/energy`;
+        const ref = `energy`;
         return await octokit.rest.repos.getContent({
             owner,
             repo,
@@ -10323,7 +10320,7 @@ async function createComment(octokit, data, difference, pull_request) {
 async function compareToOld(octokit, new_data, old_data) {
     console.log(`Old data: ${old_data['cpu']}`);
     console.log(`New data: ${new_data['cpu']}`);
-    return Math.round(((old_data['cpu'] / new_data['cpu'])+ Number.EPSILON) * 100) / 100
+    return Math.round(((old_data['cpu'] / new_data['cpu']) + Number.EPSILON) * 100) / 100
 }
 
 async function run_post() {
