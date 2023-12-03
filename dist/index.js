@@ -10125,29 +10125,130 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const core = __nccwpck_require__(1013);
-const {exec} = __nccwpck_require__(2081);
-const os = __nccwpck_require__(2037);
 const github = __nccwpck_require__(3922);
 const {Base64} = __nccwpck_require__(3439);
-const {promises: fs} = __nccwpck_require__(7147);
+const fs = __nccwpck_require__(7147);
+const util = __nccwpck_require__(3837);
+const exec = util.promisify((__nccwpck_require__(2081).exec));
 
-async function createComment(octokit, data, difference, pull_request) {
-    const issueNumber = pull_request.number;
-    let body = `The power usage is: ${data['cpu']}%`;
-    if (difference !== null) {
-        body += `\n\nThis is ${difference}% more than the base branch.`;
+
+async function measureCpuUsage() {
+    await exec('sh setup.sh');
+
+    exec('killall -9 -q demo-reporter || true\n' +
+        '/tmp/demo-reporter > /tmp/cpu-util.txt &');
+
+    const unitTest = core.getInput('run');
+    console.log("Running unit test: " + unitTest);
+    await exec(unitTest);
+    await exec('killall -9 -q demo-reporter');
+    await exec('cat /tmp/cpu-util.txt | python3.10 /tmp/spec-power-model/xgb.py --silent --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 > /tmp/energy.txt');
+
+    const energyData = fs.readFileSync('/tmp/energy.txt', 'utf8');
+    console.log("The data from the file is: " + energyData);
+
+    // Resolve the promise
+    return Promise.resolve();
+}
+
+function retrieveOctokit() {
+    const github_token = core.getInput('GITHUB_TOKEN');
+    if (!github_token) {
+        console.error('Error: No GitHub secrets access');
+        return core.setFailed('No GitHub secrets access');
+    }
+    return github.getOctokit(github_token);
+}
+
+function readEnergyData() {
+    try {
+        const energy = fs.readFileSync("/tmp/energy.txt", {encoding: 'utf8', flag: 'r'});
+        const energy_numbers = energy.split('\n');
+
+        let energy_sum = 0;
+        for (let i = 0; i < energy_numbers.length; i++) {
+            energy_sum += Number(energy_numbers[i]);
+        }
+        const power_avg = energy_sum / energy_numbers.length;
+
+        return {
+            "total_energy": energy_sum,
+            "power_avg": power_avg,
+            "duration": energy_numbers.length
+        };
+    } catch (error) {
+        console.error(`Could not read data: ${error}`);
+        return null;
+    }
+}
+
+async function createBranch(octokit) {
+    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+    const branch = 'energy';
+
+    try {
+        // Check if branch exists
+        await octokit.rest.git.getRef({
+            owner: owner,
+            repo: repo,
+            ref: `/heads/${branch}`,
+        });
+        return branch;
+    } catch (error) {
+        console.log(`Branch ${branch} does not exist. Creating new branch.`);
     }
 
     try {
-        const result = await octokit.rest.issues.createComment({
-            ...github.context.repo,
-            issue_number: issueNumber,
-            body: body,
+        // Create branch
+        await octokit.rest.git.createRef({
+            owner: owner,
+            repo: repo,
+            ref: `refs/heads/${branch}`,
+            sha: github.context.sha,
         });
-
-        console.log(`createComment Result: ${result.data}`);
     } catch (error) {
-        console.error(error);
+        console.error(`Error while creating branch: ${error}`);
+    }
+    return branch;
+}
+
+async function commitReport(octokit, content) {
+    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+    const path = `.energy/${github.context.payload.head_commit.id}.json`;
+    const message = "Add power report";
+    const branch = await createBranch(octokit);
+
+    try {
+        await octokit.rest.repos.createOrUpdateFileContents({
+            owner: owner,
+            repo: repo,
+            path: path,
+            message: message,
+            content: Base64.encode(JSON.stringify(content)),
+            branch: branch,
+        });
+    } catch (error) {
+        console.error(`Error while creating report: ${error}`);
+    }
+}
+
+async function getPullRequest(octokit, sha) {
+    try {
+        const result = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            commit_sha: sha
+        });
+        const pull_request = result.data.filter(({state}) => state === 'open');
+        if (pull_request.length === 0) {
+            return null;
+        }
+        return pull_request[0];
+    } catch (error) {
+        console.error(`No pull request associated with push`);
+        return null;
     }
 }
 
@@ -10175,104 +10276,62 @@ async function getForkPoint(pull_request, octokit) {
     }
 }
 
-async function getMeasurementsFromRepo(sha) {
+async function getMeasurementsFromRepo(octokit, sha) {
     try {
-        return JSON.parse(await fs.readFile(`./.energy/${sha}.json`, 'utf8'));
+        const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+        const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+        const path = `.energy/${sha}.json`;
+        const ref = `energy`;
+        console.log(`Getting measurements from ${path} in ${ref}`);
+        return await octokit.rest.repos.getContent({
+            owner,
+            repo,
+            path,
+            ref,
+        });
+        // return JSON.parse(fs.readFileSync(`./.energy/${sha}.json`, 'utf8'));
     } catch (error) {
         console.error(`Could not find old measurements: ${error}`);
         return null;
     }
 }
 
+async function createComment(octokit, data, difference, pull_request) {
+    const issueNumber = pull_request.number;
+    let body = `⚡ The total energy is: ${data['total_energy']}\n
+    💪 The power is: ${data['power_avg']}\n
+    🕒 The duration is: ${data['duration']}`;
+    if (difference !== null) {
+        body += `\n\nThis is ${difference}% more than the base branch.`;
+    }
+
+    try {
+        await octokit.rest.issues.createComment({
+            ...github.context.repo,
+            issue_number: issueNumber,
+            body: body,
+        });
+    } catch (error) {
+        console.error(`Could not create comment: ${error}`);
+    }
+}
+
 async function compareToOld(octokit, new_data, old_data) {
-    console.log(`Old data: ${old_data['cpu']}`);
-    console.log(`New data: ${new_data['cpu']}`);
-    return old_data['cpu'] / new_data['cpu'];
-}
-
-async function commitReport(octokit, content) {
-    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
-    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-    const path = `.energy/${github.context.payload.head_commit.id}.json`;
-    const message = "Add power report";
-    const branch = "main";
-
-    try {
-        const result = await octokit.rest.repos.createOrUpdateFileContents({
-            owner: owner,
-            repo: repo,
-            path: path,
-            message: message,
-            content: Base64.encode(JSON.stringify(content)),
-            branch: branch,
-        });
-
-    } catch (error) {
-        console.error(`Error while adding report: ${error}`);
-    }
-}
-
-async function measureCpuUsage() {
-    const cpus = os.cpus();
-    const cpu = cpus[0];
-    const start = process.cpuUsage();
-
-    const unitTest = core.getInput('run');
-    return new Promise((resolve, reject) => {
-        exec(unitTest, (err) => {
-            if (err != null) {
-                console.log(`Measure CPU Usage fail: ${err}`);
-                reject(err);
-            }
-
-            const total = Object.values(cpu.times).reduce((acc, tv) => acc + tv, 0);
-            const usage = process.cpuUsage(start);
-            const currentCPUUsage = (usage.user + usage.system) / 1000;
-            const perc = (currentCPUUsage / total) * 100;
-
-            console.log(`CPU Usage (%): ${perc}`);
-            resolve(perc);
-        });
-    });
-}
-
-function retrieveOctokit() {
-    const github_token = core.getInput('GITHUB_TOKEN');
-    if (!github_token) {
-        console.error('Error: No GitHub secrets access');
-        return core.setFailed('No GitHub secrets access');
-    }
-    return github.getOctokit(github_token);
-}
-
-async function getPullRequest(octokit, sha) {
-    try {
-        const result = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            commit_sha: sha
-        });
-        const pull_request = result.data.filter(({state}) => state === 'open');
-        if (pull_request.length === 0) {
-            return null;
-        }
-        return pull_request[0];
-    } catch (error) {
-        console.error(`Could not find pull request: ${error}`);
+    if (old_data === null) {
         return null;
     }
+    console.log(`Old data: ${old_data['cpu']}`);
+    console.log(`New data: ${new_data['cpu']}`);
+    return Math.round(((old_data['cpu'] / new_data['cpu']) + Number.EPSILON) * 100) / 100
 }
 
 async function run() {
     try {
-        const octokit = retrieveOctokit()
+        await measureCpuUsage();
 
-        const perc = await measureCpuUsage();
-        const data = {
-            "cpu": perc
-        };
-
-        await commitReport(octokit, data);
+        const octokit = retrieveOctokit();
+        const energy_data = readEnergyData();
+        await commitReport(octokit, energy_data);
 
         const pull_request = await getPullRequest(octokit, github.context.sha);
         if (pull_request === null) {
@@ -10282,20 +10341,18 @@ async function run() {
         if (sha === null) {
             return;
         }
-        const old_data = await getMeasurementsFromRepo(sha);
-        if (old_data === null) {
-            await createComment(octokit, data, null, pull_request);
-        } else {
-            const difference = await compareToOld(octokit, data, old_data);
-            await createComment(octokit, data, difference, pull_request);
-        }
+        const old_data = await getMeasurementsFromRepo(octokit, sha);
+        const difference = await compareToOld(octokit, energy_data, old_data);
+        await createComment(octokit, energy_data, difference, pull_request);
 
+        return Promise.resolve();
     } catch (error) {
         console.error(error);
         core.setFailed(error.message);
     }
 }
 
+// noinspection JSIgnoredPromiseFromCall
 run();
 })();
 
