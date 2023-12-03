@@ -10282,6 +10282,7 @@ async function getMeasurementsFromRepo(octokit, sha) {
         const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
         const path = `.energy/${sha}.json`;
         const ref = `energy`;
+        console.log(`Getting measurements from ${path} in ${ref}`);
         return await octokit.rest.repos.getContent({
             owner,
             repo,
@@ -10305,26 +10306,29 @@ async function createComment(octokit, data, difference, pull_request) {
     }
 
     try {
-        const result = await octokit.rest.issues.createComment({
+        await octokit.rest.issues.createComment({
             ...github.context.repo,
             issue_number: issueNumber,
             body: body,
         });
-
-        console.log(`createComment Result: ${result.data}`);
     } catch (error) {
-        console.error(error);
+        console.error(`Could not create comment: ${error}`);
     }
 }
 
 async function compareToOld(octokit, new_data, old_data) {
+    if (old_data === null) {
+        return null;
+    }
     console.log(`Old data: ${old_data['cpu']}`);
     console.log(`New data: ${new_data['cpu']}`);
     return Math.round(((old_data['cpu'] / new_data['cpu']) + Number.EPSILON) * 100) / 100
 }
 
-async function run_post() {
+async function run() {
     try {
+        await measureCpuUsage();
+
         const octokit = retrieveOctokit();
         const energy_data = readEnergyData();
         await commitReport(octokit, energy_data);
@@ -10338,21 +10342,9 @@ async function run_post() {
             return;
         }
         const old_data = await getMeasurementsFromRepo(octokit, sha);
-        if (old_data === null) {
-            await createComment(octokit, energy_data, null, pull_request);
-        } else {
-            const difference = await compareToOld(octokit, energy_data, old_data);
-            await createComment(octokit, energy_data, difference, pull_request);
-        }
-    } catch (error) {
-        core.setFailed(error.message);
-    }
-}
+        const difference = await compareToOld(octokit, energy_data, old_data);
+        await createComment(octokit, energy_data, difference, pull_request);
 
-async function run() {
-    try {
-        await measureCpuUsage();
-        await run_post();
         return Promise.resolve();
     } catch (error) {
         console.error(error);
