@@ -10129,8 +10129,21 @@ const github = __nccwpck_require__(3922);
 const {Base64} = __nccwpck_require__(3439);
 const fs = __nccwpck_require__(7147);
 const util = __nccwpck_require__(3837);
+const os = __nccwpck_require__(2037);
 const exec = util.promisify((__nccwpck_require__(2081).exec));
 
+async function estimateEnergy() {
+    let modelData;
+    try {
+        const models = fetch('./models.json');
+        modelData = models[os.cpus()[0].model];
+    } catch (error) {
+        console.error(`Did not recognize model`);
+        return Promise.resolve();
+    }
+    await exec(`cat /tmp/cpu-util.txt | python3.10 /tmp/spec-power-model/xgb.py --silent --tdp ${modelData['TDP']} --cpu-threads ${modelData['CPU_THREADS']} --cpu-cores ${modelData['CPU_CORES']} --cpu-make ${modelData['CPU_MAKE']} --release-year ${modelData['RELEASE_YEAR']} --ram ${modelData['RAM']} --cpu-freq ${modelData['CPU_FREQ']} --cpu-chips ${modelData['CPU_CHIPS']} --vhost-ratio ${modelData['VHOST_RATIO']} > /tmp/energy.txt`);
+    return Promise.resolve();
+}
 
 async function measureCpuUsage() {
     await exec('sh setup.sh');
@@ -10142,12 +10155,11 @@ async function measureCpuUsage() {
     console.log("Running unit test: " + unitTest);
     await exec(unitTest);
     await exec('killall -9 -q demo-reporter');
-    await exec('cat /tmp/cpu-util.txt | python3.10 /tmp/spec-power-model/xgb.py --silent --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 > /tmp/energy.txt');
+    await estimateEnergy()
 
     const energyData = fs.readFileSync('/tmp/energy.txt', 'utf8');
     console.log("The data from the file is: " + energyData);
 
-    // Resolve the promise
     return Promise.resolve();
 }
 
@@ -10282,18 +10294,17 @@ async function getMeasurementsFromRepo(octokit, sha) {
         const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
         const path = `.energy/${sha}.json`;
         const ref = `energy`;
+
         console.log(`Getting measurements from ${path} in ${ref}`);
+
         const result = await octokit.rest.repos.getContent({
             owner,
             repo,
             path,
             ref,
         });
-        const content = Buffer.from(result.data.content, 'base64').toString()
-        const oldData = JSON.parse(content);
-        console.log(`Old data: ${oldData}`);
-        return oldData;
-        // return JSON.parse(fs.readFileSync(`./.energy/${sha}.json`, 'utf8'));
+        const content = Buffer.from(result.data['content'], 'base64').toString()
+        return JSON.parse(content);
     } catch (error) {
         console.error(`Could not find old measurements: ${error}`);
         return null;
@@ -10304,12 +10315,12 @@ async function createComment(octokit, data, difference, pull_request) {
     const issueNumber = pull_request.number;
     let body = `⚡ The total energy is: ${data['total_energy']}\n💪 The power is: ${data['power_avg']}\n🕒 The duration is: ${data['duration']}`;
     if (difference !== null) {
-        if (difference > -0.5 && difference < 0.5) {
+        if (difference >= -0.5 && difference <= 0.5) {
             body += '\n\nNo significant difference has been found compared to the base branch.';
         } else if (difference > 0.5) {
-            body += `\n\nThis is ${Math.round((difference * 100) + Number.EPSILON)}% less than the base branch.`;
+            body += `\n\n<code style="color : red">${Math.round((difference * 100) + Number.EPSILON)}%</code> higher than the base branch`;
         } else {
-            body += `\n\nThis is <code style="color : red">${Math.round((difference * 100) + Number.EPSILON)}%</code> more than the base branch`;
+            body += `\n\n<code style="color : green">${Math.round((difference * 100) + Number.EPSILON)}%</code> lower than the base branch`;
         }
     }
 
