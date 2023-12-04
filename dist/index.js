@@ -1,6 +1,29 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 3703:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const { execSync } = __nccwpck_require__(2081);
+
+var run = function rubn(){
+    try {
+        // Run AI
+        execSync(`cat /tmp/cpu-util.txt | python3.10 /tmp/spec-power-model/xgb.py --silent --tdp ${modelData['TDP']} --cpu-threads ${modelData['CPU_THREADS']} --cpu-cores ${modelData['CPU_CORES']} --cpu-make ${modelData['CPU_MAKE']} --release-year ${modelData['RELEASE_YEAR']} --ram ${modelData['RAM']} --cpu-freq ${modelData['CPU_FREQ']} --cpu-chips ${modelData['CPU_CHIPS']} --vhost-ratio ${modelData['VHOST_RATIO']} > /tmp/energy.txt`);
+
+        // Deactivate virtual environment
+        execSync('deactivate');
+    } catch (error) {
+
+        process.exit(1);
+    }
+
+};
+
+module.exports.run = run;
+
+/***/ }),
+
 /***/ 7111:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -9946,8 +9969,13 @@ const { execSync } = __nccwpck_require__(2081);
 
 var setup = function setup(){
     try {
+
         // Clone the repository
         execSync('git clone --depth 1 --single-branch --branch main https://github.com/green-coding-berlin/spec-power-model /tmp/spec-power-model');
+
+        // Create virtual environment
+        execSync('python3 -m venv /tmp/venv');
+        execSync('source /tmp/venv/bin/activate');
 
         // Install Python dependencies
         execSync('python3 -m pip install -r /tmp/spec-power-model/requirements.txt');
@@ -10163,6 +10191,7 @@ const util = __nccwpck_require__(3837);
 const os = __nccwpck_require__(2037);
 const exec = util.promisify((__nccwpck_require__(2081).exec));
 const setup = __nccwpck_require__(1963);
+const AI = __nccwpck_require__(3703);
 
 async function estimateEnergy() {
     let modelData;
@@ -10183,8 +10212,7 @@ async function estimateEnergy() {
         console.error(`Error reading models.json: ${error}`);
         return Promise.reject();
     }
-
-    await exec(`cat /tmp/cpu-util.txt | python3.10 /tmp/spec-power-model/xgb.py --silent --tdp ${modelData['TDP']} --cpu-threads ${modelData['CPU_THREADS']} --cpu-cores ${modelData['CPU_CORES']} --cpu-make ${modelData['CPU_MAKE']} --release-year ${modelData['RELEASE_YEAR']} --ram ${modelData['RAM']} --cpu-freq ${modelData['CPU_FREQ']} --cpu-chips ${modelData['CPU_CHIPS']} --vhost-ratio ${modelData['VHOST_RATIO']} > /tmp/energy.txt`);
+    AI.run();
     return Promise.resolve();
 }
 

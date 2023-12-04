@@ -2,8 +2,13 @@ const { execSync } = require('child_process');
 
 var setup = function setup(){
     try {
+
         // Clone the repository
         execSync('git clone --depth 1 --single-branch --branch main https://github.com/green-coding-berlin/spec-power-model /tmp/spec-power-model');
+
+        // Create virtual environment
+        execSync('python3 -m venv /tmp/venv');
+        execSync('source /tmp/venv/bin/activate');
 
         // Install Python dependencies
         execSync('python3 -m pip install -r /tmp/spec-power-model/requirements.txt');
