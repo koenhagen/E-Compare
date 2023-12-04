@@ -9,9 +9,12 @@ const exec = util.promisify(require('child_process').exec);
 async function estimateEnergy() {
     let modelData;
     try {
-        const models = await fetch('./models.json');
+        const models = await (await fetch('models.json')).json();
+        console.log(`Models: ${models}`);
+        console.log(`Models: ${await fetch('models.json')}`);
+        console.log(`Models: ${await fetch('./models.json')}`);
         const modelName = os.cpus()[0].model;
-        const matchingModel = Object.keys(await models.json()).find(model => {
+        const matchingModel = Object.keys(models).find(model => {
             console.log(`Model: ${model}`);
             return modelName.includes(model);
         });
@@ -29,7 +32,7 @@ async function estimateEnergy() {
 
     } catch (error) {
         console.error(`Error reading models.json: ${error}`);
-        return Promise.resolve();
+        return Promise.reject();
     }
 
     await exec(`cat /tmp/cpu-util.txt | python3.10 /tmp/spec-power-model/xgb.py --silent --tdp ${modelData['TDP']} --cpu-threads ${modelData['CPU_THREADS']} --cpu-cores ${modelData['CPU_CORES']} --cpu-make ${modelData['CPU_MAKE']} --release-year ${modelData['RELEASE_YEAR']} --ram ${modelData['RAM']} --cpu-freq ${modelData['CPU_FREQ']} --cpu-chips ${modelData['CPU_CHIPS']} --vhost-ratio ${modelData['VHOST_RATIO']} > /tmp/energy.txt`);
