@@ -13,21 +13,13 @@ async function estimateEnergy() {
         const models = JSON.parse(modelsContent);
         console.log(`Models: ${models}`);
         const modelName = os.cpus()[0].model;
-        const matchingModel = Object.keys(models).find(model => {
-            console.log(`Model: ${model}`);
-            return modelName.includes(model);
-        });
-
-        console.log(`Model name: ${modelName}`);
-        console.log(`Matching model: ${matchingModel}`);
+        const matchingModel = Object.keys(models).find(model => modelName.includes(model));
 
         if (matchingModel === undefined || matchingModel === null || matchingModel === '') {
             console.error(`No matching model found for ${modelName}`);
             return Promise.reject();
         }
         modelData = models[matchingModel];
-
-        console.log(`Model data: ${modelData}`);
 
     } catch (error) {
         console.error(`Error reading models.json: ${error}`);
@@ -261,8 +253,8 @@ async function run() {
     } catch (error) {
         console.error(error);
         core.setFailed(error.message);
+        return Promise.reject();
     }
 }
 
-// noinspection JSIgnoredPromiseFromCall
 run();
