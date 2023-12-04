@@ -10136,7 +10136,7 @@ async function estimateEnergy() {
     let modelData;
     try {
         const models = fetch('./models.json');
-        const modelName = models[os.cpus()[0].model];
+        const modelName = os.cpus()[0].model;
         const matchingModel = Object.keys(models).find(model => modelName.includes(model));
 
         console.log(`Model name: ${modelName}`);
