@@ -9,10 +9,9 @@ const exec = util.promisify(require('child_process').exec);
 async function estimateEnergy() {
     let modelData;
     try {
-        const models = await (await fetch('models.json')).json();
+        const modelsContent = fs.readFileSync('models.json', 'utf8');
+        const models = JSON.parse(modelsContent);
         console.log(`Models: ${models}`);
-        console.log(`Models: ${await fetch('models.json')}`);
-        console.log(`Models: ${await fetch('./models.json')}`);
         const modelName = os.cpus()[0].model;
         const matchingModel = Object.keys(models).find(model => {
             console.log(`Model: ${model}`);
