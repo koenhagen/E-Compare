@@ -5,6 +5,7 @@ const fs = require("fs");
 const util = require('util');
 const os = require("os");
 const exec = util.promisify(require('child_process').exec);
+const setup = require('./setup');
 
 async function estimateEnergy() {
     let modelData;
@@ -31,7 +32,6 @@ async function estimateEnergy() {
 }
 
 async function measureCpuUsage() {
-    await exec('sh setup.sh');
 
     exec('killall -9 -q demo-reporter || true\n' +
         '/tmp/demo-reporter > /tmp/cpu-util.txt &');
@@ -198,14 +198,14 @@ async function getMeasurementsFromRepo(octokit, sha) {
 
 async function createComment(octokit, data, difference, pull_request) {
     const issueNumber = pull_request.number;
-    let body = `⚡ The total energy is: ${data['total_energy']}\n💪 The power is: ${data['power_avg']}\n🕒 The duration is: ${data['duration']}`;
+    let body = `⚡ The total energy is: ${data['total_energy']}\n💪 The power is: ${Math.round((data['power_avg'] + Number.EPSILON) * 100) / 100}\n🕒 The duration is: ${data['duration']}`;
     if (difference !== null) {
         if (difference >= -0.5 && difference <= 0.5) {
             body += '\n\nNo significant difference has been found compared to the base branch.';
         } else if (difference > 0.5) {
-            body += `\n\n<code style="color : red">${Math.round((difference * 100) + Number.EPSILON)}%</code> higher than the base branch`;
+            body += `\n\n<code style="color : red">${Math.round((difference * 100) + Number.EPSILON)}%</code> lower than the base branch`;
         } else {
-            body += `\n\n<code style="color : green">${Math.round((difference * 100) + Number.EPSILON)}%</code> lower than the base branch`;
+            body += `\n\n<code style="color : green">${Math.round((difference * 100) + Number.EPSILON)}%</code> higher than the base branch`;
         }
     }
 
@@ -231,6 +231,7 @@ async function compareToOld(octokit, new_data, old_data) {
 
 async function run() {
     try {
+        setup.run();
         await measureCpuUsage();
 
         const octokit = retrieveOctokit();

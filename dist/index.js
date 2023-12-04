@@ -9939,6 +9939,37 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 1963:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const { execSync } = __nccwpck_require__(2081);
+
+var setup = function setup(){
+    try {
+        // Clone the repository
+        execSync('git clone --depth 1 --single-branch --branch main https://github.com/green-coding-berlin/spec-power-model /tmp/spec-power-model');
+
+        // Install Python dependencies
+        execSync('python3 -m pip install -r /tmp/spec-power-model/requirements.txt');
+
+        // Compile C code
+        execSync('gcc /tmp/spec-power-model/demo-reporter/cpu-utilization.c -o /tmp/demo-reporter');
+
+        // Make the compiled binary executable
+        execSync('chmod +x /tmp/demo-reporter');
+
+        console.log('Setup completed successfully.');
+    } catch (error) {
+        console.error(`Setup failed: ${error.message}`);
+        process.exit(1);
+    }
+
+};
+
+module.exports.run = setup;
+
+/***/ }),
+
 /***/ 571:
 /***/ ((module) => {
 
@@ -10131,6 +10162,7 @@ const fs = __nccwpck_require__(7147);
 const util = __nccwpck_require__(3837);
 const os = __nccwpck_require__(2037);
 const exec = util.promisify((__nccwpck_require__(2081).exec));
+const setup = __nccwpck_require__(1963);
 
 async function estimateEnergy() {
     let modelData;
@@ -10157,7 +10189,6 @@ async function estimateEnergy() {
 }
 
 async function measureCpuUsage() {
-    await exec('sh setup.sh');
 
     exec('killall -9 -q demo-reporter || true\n' +
         '/tmp/demo-reporter > /tmp/cpu-util.txt &');
@@ -10324,14 +10355,14 @@ async function getMeasurementsFromRepo(octokit, sha) {
 
 async function createComment(octokit, data, difference, pull_request) {
     const issueNumber = pull_request.number;
-    let body = `⚡ The total energy is: ${data['total_energy']}\n💪 The power is: ${data['power_avg']}\n🕒 The duration is: ${data['duration']}`;
+    let body = `⚡ The total energy is: ${data['total_energy']}\n💪 The power is: ${Math.round((data['power_avg'] + Number.EPSILON) * 100) / 100}\n🕒 The duration is: ${data['duration']}`;
     if (difference !== null) {
         if (difference >= -0.5 && difference <= 0.5) {
             body += '\n\nNo significant difference has been found compared to the base branch.';
         } else if (difference > 0.5) {
-            body += `\n\n<code style="color : red">${Math.round((difference * 100) + Number.EPSILON)}%</code> higher than the base branch`;
+            body += `\n\n<code style="color : red">${Math.round((difference * 100) + Number.EPSILON)}%</code> lower than the base branch`;
         } else {
-            body += `\n\n<code style="color : green">${Math.round((difference * 100) + Number.EPSILON)}%</code> lower than the base branch`;
+            body += `\n\n<code style="color : green">${Math.round((difference * 100) + Number.EPSILON)}%</code> higher than the base branch`;
         }
     }
 
@@ -10357,6 +10388,7 @@ async function compareToOld(octokit, new_data, old_data) {
 
 async function run() {
     try {
+        setup.run();
         await measureCpuUsage();
 
         const octokit = retrieveOctokit();
