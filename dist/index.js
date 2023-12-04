@@ -10136,15 +10136,25 @@ async function estimateEnergy() {
     let modelData;
     try {
         const models = fetch('./models.json');
+        const modelName = models[os.cpus()[0].model];
+        const matchingModel = Object.keys(models).find(model => modelName.includes(model));
 
-        console.log(`Model: ${os.cpus()}`);
-        console.log(`Model: ${os.cpus()[0]}`);
-        console.log(`Model: ${os.cpus()[0].model}`);
-        modelData = models[os.cpus()[0].model];
+        console.log(`Model name: ${modelName}`);
+        console.log(`Matching model: ${matchingModel}`);
+
+        if (matchingModel === undefined || matchingModel === null || matchingModel === '') {
+            console.error(`No matching model found for ${modelName}`);
+            return Promise.reject();
+        }
+        modelData = models[matchingModel];
+
+        console.log(`Model data: ${modelData}`);
+
     } catch (error) {
-        console.error(`Did not recognize model`);
+        console.error(`Error reading models.json: ${error}`);
         return Promise.resolve();
     }
+
     await exec(`cat /tmp/cpu-util.txt | python3.10 /tmp/spec-power-model/xgb.py --silent --tdp ${modelData['TDP']} --cpu-threads ${modelData['CPU_THREADS']} --cpu-cores ${modelData['CPU_CORES']} --cpu-make ${modelData['CPU_MAKE']} --release-year ${modelData['RELEASE_YEAR']} --ram ${modelData['RAM']} --cpu-freq ${modelData['CPU_FREQ']} --cpu-chips ${modelData['CPU_CHIPS']} --vhost-ratio ${modelData['VHOST_RATIO']} > /tmp/energy.txt`);
     return Promise.resolve();
 }
