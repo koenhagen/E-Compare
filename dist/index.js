@@ -10136,6 +10136,10 @@ async function estimateEnergy() {
     let modelData;
     try {
         const models = fetch('./models.json');
+
+        console.log(`Model: ${os.cpus()}`);
+        console.log(`Model: ${os.cpus()[0]}`);
+        console.log(`Model: ${os.cpus()[0].model}`);
         modelData = models[os.cpus()[0].model];
     } catch (error) {
         console.error(`Did not recognize model`);
