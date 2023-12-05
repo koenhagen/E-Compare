@@ -10,7 +10,7 @@ const run = function run(modelData) {
     try {
         // Create virtual environment
         execSync('python3 -m venv /tmp/venv');
-        execSync('source /tmp/venv/bin/activate');
+        execSync('. /tmp/venv/bin/activate');
 
         // Install Python dependencies
         execSync('python3 -m pip install -r /tmp/spec-power-model/requirements.txt');
@@ -10311,7 +10311,6 @@ const models = (__nccwpck_require__(2502)/* .models */ .C);
 async function estimateEnergy() {
     let modelData;
     try {
-        console.log(`Models: ${models}`);
         const modelName = os.cpus()[0].model;
         const matchingModel = Object.keys(models).find(model => modelName.includes(model));
 
@@ -10334,7 +10333,7 @@ async function measureCpuUsage() {
         '/tmp/demo-reporter > /tmp/cpu-util.txt &');
 
     const unitTest = core.getInput('run');
-    console.log("Running unit test: " + unitTest);
+    console.log("Testing command: " + unitTest);
     await exec(unitTest);
     await exec('killall -9 -q demo-reporter');
     await estimateEnergy()

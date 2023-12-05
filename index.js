@@ -12,7 +12,6 @@ const models = require('./models').models;
 async function estimateEnergy() {
     let modelData;
     try {
-        console.log(`Models: ${models}`);
         const modelName = os.cpus()[0].model;
         const matchingModel = Object.keys(models).find(model => modelName.includes(model));
 
@@ -35,7 +34,7 @@ async function measureCpuUsage() {
         '/tmp/demo-reporter > /tmp/cpu-util.txt &');
 
     const unitTest = core.getInput('run');
-    console.log("Running unit test: " + unitTest);
+    console.log("Testing command: " + unitTest);
     await exec(unitTest);
     await exec('killall -9 -q demo-reporter');
     await estimateEnergy()
