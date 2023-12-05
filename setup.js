@@ -6,13 +6,6 @@ var setup = function setup(){
         // Clone the repository
         execSync('git clone --depth 1 --single-branch --branch main https://github.com/green-coding-berlin/spec-power-model /tmp/spec-power-model');
 
-        // Create virtual environment
-        execSync('python3 -m venv /tmp/venv');
-        execSync('source /tmp/venv/bin/activate');
-
-        // Install Python dependencies
-        execSync('python3 -m pip install -r /tmp/spec-power-model/requirements.txt');
-
         // Compile C code
         execSync('gcc /tmp/spec-power-model/demo-reporter/cpu-utilization.c -o /tmp/demo-reporter');
 
