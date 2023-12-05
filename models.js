@@ -1,4 +1,4 @@
-{
+const models = {
   "8272CL": {
     "MODEL_NAME": "8272CL",
     "TDP": 195,
@@ -84,3 +84,5 @@
     "VHOST_RATIO": 0.015625
   }
 }
+
+export { models };

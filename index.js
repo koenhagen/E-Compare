@@ -7,12 +7,11 @@ const os = require("os");
 const exec = util.promisify(require('child_process').exec);
 const setup = require('./setup');
 const AI = require('./AI');
+const models = require('./models').models;
 
 async function estimateEnergy() {
     let modelData;
     try {
-        const modelsContent = fs.readFileSync('models.json', 'utf8');
-        const models = JSON.parse(modelsContent);
         console.log(`Models: ${models}`);
         const modelName = os.cpus()[0].model;
         const matchingModel = Object.keys(models).find(model => modelName.includes(model));
