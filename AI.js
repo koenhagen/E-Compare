@@ -1,6 +1,6 @@
 const { execSync } = require('child_process');
 
-var run = function rubn(){
+const run = function run(modelData) {
     try {
         // Create virtual environment
         execSync('python3 -m venv /tmp/venv');

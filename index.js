@@ -22,12 +22,11 @@ async function estimateEnergy() {
             return Promise.reject();
         }
         modelData = models[matchingModel];
-
     } catch (error) {
         console.error(`Error reading models.json: ${error}`);
         return Promise.reject();
     }
-    AI.run();
+    AI.run(modelData);
     return Promise.resolve();
 }
 

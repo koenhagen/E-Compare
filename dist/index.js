@@ -6,7 +6,7 @@
 
 const { execSync } = __nccwpck_require__(2081);
 
-var run = function rubn(){
+const run = function run(modelData) {
     try {
         // Create virtual environment
         execSync('python3 -m venv /tmp/venv');
@@ -10206,12 +10206,11 @@ async function estimateEnergy() {
             return Promise.reject();
         }
         modelData = models[matchingModel];
-
     } catch (error) {
         console.error(`Error reading models.json: ${error}`);
         return Promise.reject();
     }
-    AI.run();
+    AI.run(modelData);
     return Promise.resolve();
 }
 
