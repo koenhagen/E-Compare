@@ -8,7 +8,7 @@ const { execSync } = __nccwpck_require__(2081);
 
 const run = function run(modelData) {
     try {
-        // Create virtual environment
+        // Create and activate virtual environment
         execSync('python3 -m venv /tmp/venv');
         execSync('. /tmp/venv/bin/activate');
 
@@ -17,8 +17,7 @@ const run = function run(modelData) {
         // Run AI
         execSync(`cat /tmp/cpu-util.txt | python3.10 /tmp/spec-power-model/xgb.py --silent --tdp ${modelData['TDP']} --cpu-threads ${modelData['CPU_THREADS']} --cpu-cores ${modelData['CPU_CORES']} --cpu-make ${modelData['CPU_MAKE']} --release-year ${modelData['RELEASE_YEAR']} --ram ${modelData['RAM']} --cpu-freq ${modelData['CPU_FREQ']} --cpu-chips ${modelData['CPU_CHIPS']} --vhost-ratio ${modelData['VHOST_RATIO']} > /tmp/energy.txt`);
 
-        // Deactivate virtual environment
-        // execSync('deactivate');
+        console.log('Data successfully gathered.');
     } catch (error) {
 
         process.exit(1);
