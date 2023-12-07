@@ -4,7 +4,7 @@ ${\large\textsf{\color{lightgreen}E-Co}}$‎​mpare serves as a GitHub workflow
 
 
 ## Implementation
-The ${\large\textsf{\color{lightgreen}E-Co}}$‎​mpare tool only requires a few line changes compared to standard unit testing workflows. The tool has been purposely built to minimize the amount of changes required to get it implemented. To generate enough energy reports to make the comparison functionality work it's best to have the tool trigger on "push". 
+The ${\large\textsf{\color{lightgreen}{E-Co}}}$‎​mpare tool only requires a few line changes compared to standard unit testing workflows. The tool has been purposely built to minimize the amount of changes required to get it implemented. To generate enough energy reports to make the comparison functionality work it's best to have the tool trigger on "push". 
 
 ### Basic implementation
 ```
