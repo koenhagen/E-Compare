@@ -4,7 +4,9 @@ const run = function run(modelData) {
     try {
         // Create and activate virtual environment
         execSync('python3 -m venv /tmp/venv');
-        execSync('. /tmp/venv/bin/activate');
+
+        // Activate virtual environment
+        execSync('source /tmp/venv/bin/activate');
 
         // Install Python dependencies
         execSync('python3 -m pip install -r /tmp/spec-power-model/requirements.txt');
