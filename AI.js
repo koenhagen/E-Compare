@@ -3,10 +3,10 @@ const { execSync } = require('child_process');
 const run = function run(modelData) {
     try {
         // Create and activate virtual environment
-        execSync('python3 -m venv /tmp/venv');
+        execSync('python3 -m venv env');
 
         // Activate virtual environment
-        execSync('. /tmp/venv/bin/activate');
+        execSync('. env/bin/activate');
 
         // Install Python dependencies
         execSync('python3 -m pip install -r /tmp/spec-power-model/requirements.txt');
