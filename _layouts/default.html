@@ -9,15 +9,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
 
-    <script type="text/x-mathjax-config">
+    <script>
         MathJax = {
             tex: {
-                inlineMath: [['$', '$'], ["\\(", "\\)"]],
-            },
-            options: {
-                processHtml: true
-            },
-            loader: {load: ['[tex]/autoload/all']}
+                inlineMath: [['$', '$']]
+            }
         };
     </script>
     <script type="text/javascript" id="MathJax-script" async
