@@ -12,8 +12,10 @@
     <script>
         MathJax = {
             tex: {
-                inlineMath: [['$', '$']]
-            }
+                inlineMath: [['$', '$']],
+                packages: {'[+]': ['color']}
+            },
+            loader: {load: ['[tex]/color']}
         };
     </script>
     <script type="text/javascript" id="MathJax-script" async
