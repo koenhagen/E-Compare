@@ -1,5 +1,3 @@
-# $\color{lightgreen}{\large\textbf{E-Co}}$‎​mpare
-
 $\color{green}{\large\textbf{E-Co}}$‎​mpare serves as a GitHub workflow tool designed to offer valuable insights into the energy consumption of software, particularly through the comparison of different versions within pull requests. Operating as a black-box system, it utilizes the user's unit tests to provide insights into the energy efficiency impact of code changes, aiding developers in making informed decisions.
 
 ## Implementation
