@@ -1,17 +1,9 @@
-# ${\large\textsf{\color{lightgreen}E-Co}}$‎​mpare
+# $\color{lightgreen}{\large\textbf{E-Co}}$‎​mpare
 
-$\color{green}{y = (cos)x}$
-$\color{lightgreen}{y = (cos)x}$
-$\color{lightgreen}{E-Co}$
-$\color{lightgreen}{\largeE-Co}$
-$\color{lightgreen}{\large\textbf{E-Co}}$
-$\color{lightgreen}{\large\textbf{E-Co}}$‎​mpare
-
-
-${\large\textsf{\color{green}E-Co}}$‎​mpare serves as a GitHub workflow tool designed to offer valuable insights into the energy consumption of software, particularly through the comparison of different versions within pull requests. Operating as a black-box system, it utilizes the user's unit tests to provide insights into the energy efficiency impact of code changes, aiding developers in making informed decisions.
+$\color{green}{\large\textbf{E-Co}}$‎​mpare serves as a GitHub workflow tool designed to offer valuable insights into the energy consumption of software, particularly through the comparison of different versions within pull requests. Operating as a black-box system, it utilizes the user's unit tests to provide insights into the energy efficiency impact of code changes, aiding developers in making informed decisions.
 
 ## Implementation
-The ${\large\textsf{\color{green}{E-Co}}}$‎​mpare tool only requires a few line changes compared to standard unit testing workflows. The tool has been purposely built to minimize the amount of changes required to get it implemented. To generate enough energy reports to make the comparison functionality work it's best to have the tool trigger on "push". 
+The $\color{green}{\large\textbf{E-Co}}$‎​mpare tool only requires a few line changes compared to standard unit testing workflows. The tool has been purposely built to minimize the amount of changes required to get it implemented. To generate enough energy reports to make the comparison functionality work it's best to have the tool trigger on "push". 
 
 ### Basic implementation
 ```
@@ -81,4 +73,4 @@ steps:
 ```
 
 ## Functionality
-${\large\textsf{\color{lightgreen}E-Co}}$‎​mpare makes use of the [XGBoost Machine Learning model](https://github.com/green-coding-berlin/spec-power-model) by green-coding-berlin for energy estimation in the cloud. 
+$\color{green}{\large\textbf{E-Co}}$‎​mpare makes use of the [XGBoost Machine Learning model](https://github.com/green-coding-berlin/spec-power-model) by green-coding-berlin for energy estimation in the cloud. 
