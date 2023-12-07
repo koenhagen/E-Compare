@@ -1,6 +1,132 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 3703:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const { execSync } = __nccwpck_require__(2081);
+
+const run = function run(modelData) {
+    try {
+        // Create and activate virtual environment
+        execSync('python3 -m venv /tmp/venv');
+        execSync('. /tmp/venv/bin/activate');
+
+        // Install Python dependencies
+        execSync('python3 -m pip install -r /tmp/spec-power-model/requirements.txt');
+        // Run AI
+        execSync(`cat /tmp/cpu-util.txt | python3.10 /tmp/spec-power-model/xgb.py --silent --tdp ${modelData['TDP']} --cpu-threads ${modelData['CPU_THREADS']} --cpu-cores ${modelData['CPU_CORES']} --cpu-make ${modelData['CPU_MAKE']} --release-year ${modelData['RELEASE_YEAR']} --ram ${modelData['RAM']} --cpu-freq ${modelData['CPU_FREQ']} --cpu-chips ${modelData['CPU_CHIPS']} --vhost-ratio ${modelData['VHOST_RATIO']} > /tmp/energy.txt`);
+
+        console.log('Data successfully gathered.');
+    } catch (error) {
+
+        process.exit(1);
+    }
+
+};
+
+module.exports.run = run;
+
+/***/ }),
+
+/***/ 2502:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+"use strict";
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "C": () => (/* binding */ models)
+/* harmony export */ });
+const models = {
+  "8272CL": {
+    "MODEL_NAME": "8272CL",
+    "TDP": 195,
+    "CPU_THREADS": 52,
+    "CPU_CORES": 26,
+    "CPU_MAKE": "intel",
+    "RELEASE_YEAR": 2019,
+    "RAM": 182,
+    "CPU_FREQ": 2600,
+    "CPU_CHIPS": 1,
+    "VHOST_RATIO": 0.038461538461538464
+  },
+  "8370C": {
+    "MODEL_NAME": "8370C",
+    "TDP": 270,
+    "CPU_THREADS": 64,
+    "CPU_CORES": 32,
+    "CPU_MAKE": "intel",
+    "RELEASE_YEAR": 2021,
+    "RAM": 224,
+    "CPU_FREQ": 2800,
+    "CPU_CHIPS": 1,
+    "VHOST_RATIO": 0.03125
+  },
+  "E5-2673 v4": {
+    "MODEL_NAME": "E5-2673v4",
+    "TDP": 165,
+    "CPU_THREADS": 52,
+    "CPU_CORES": 26,
+    "CPU_MAKE": "intel",
+    "RELEASE_YEAR": 2018,
+    "RAM": 182,
+    "CPU_FREQ": 2300,
+    "CPU_CHIPS": 1,
+    "VHOST_RATIO": 0.038461538461538464
+  },
+  "E5-2673 v3": {
+    "MODEL_NAME": "E5-2673v3",
+    "TDP": 110,
+    "CPU_THREADS": 24,
+    "CPU_CORES": 12,
+    "CPU_MAKE": "intel",
+    "RELEASE_YEAR": 2015,
+    "RAM": 84,
+    "CPU_FREQ": 2400,
+    "CPU_CHIPS": 1,
+    "VHOST_RATIO": 0.08333333333333333
+  },
+  "8171M": {
+    "MODEL_NAME": "8171M",
+    "TDP": 165,
+    "CPU_THREADS": 52,
+    "CPU_CORES": 26,
+    "CPU_MAKE": "intel",
+    "RELEASE_YEAR": 2018,
+    "RAM": 182,
+    "CPU_FREQ": 2600,
+    "CPU_CHIPS": 1,
+    "VHOST_RATIO": 0.038461538461538464
+  },
+  "AMD EPYC 7763": {
+    "MODEL_NAME": "EPYC_7763",
+    "TDP": 280,
+    "CPU_THREADS": 128,
+    "CPU_CORES": 64,
+    "CPU_MAKE": "amd",
+    "RELEASE_YEAR": 2021,
+    "RAM": 512,
+    "CPU_FREQ": 2450,
+    "CPU_CHIPS": 1,
+    "VHOST_RATIO": 0.03125
+  },
+  "AMD EPYC 7B12": {
+    "MODEL_NAME": "EPYC_7B12",
+    "TDP": 240,
+    "CPU_THREADS": 128,
+    "CPU_CORES": 64,
+    "CPU_MAKE": "amd",
+    "RELEASE_YEAR": 2021,
+    "RAM": 512,
+    "CPU_FREQ": 2250,
+    "CPU_CHIPS": 1,
+    "VHOST_RATIO": 0.015625
+  }
+}
+
+
+
+/***/ }),
+
 /***/ 7111:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -9939,6 +10065,35 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 1963:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const { execSync } = __nccwpck_require__(2081);
+
+var setup = function setup(){
+    try {
+
+        // Clone the repository
+        execSync('git clone --depth 1 --single-branch --branch main https://github.com/green-coding-berlin/spec-power-model /tmp/spec-power-model');
+
+        // Compile C code
+        execSync('gcc /tmp/spec-power-model/demo-reporter/cpu-utilization.c -o /tmp/demo-reporter');
+
+        // Make the compiled binary executable
+        execSync('chmod +x /tmp/demo-reporter');
+
+        console.log('Setup completed successfully.');
+    } catch (error) {
+        console.error(`Setup failed: ${error.message}`);
+        process.exit(1);
+    }
+
+};
+
+module.exports.run = setup;
+
+/***/ }),
+
 /***/ 571:
 /***/ ((module) => {
 
@@ -10116,6 +10271,23 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__nccwpck_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
@@ -10129,25 +10301,45 @@ const github = __nccwpck_require__(3922);
 const {Base64} = __nccwpck_require__(3439);
 const fs = __nccwpck_require__(7147);
 const util = __nccwpck_require__(3837);
+const os = __nccwpck_require__(2037);
 const exec = util.promisify((__nccwpck_require__(2081).exec));
+const setup = __nccwpck_require__(1963);
+const AI = __nccwpck_require__(3703);
+const models = (__nccwpck_require__(2502)/* .models */ .C);
 
+async function estimateEnergy() {
+    let modelData;
+    try {
+        const modelName = os.cpus()[0].model;
+        const matchingModel = Object.keys(models).find(model => modelName.includes(model));
+
+        if (matchingModel === undefined || matchingModel === null || matchingModel === '') {
+            console.error(`No matching model found for ${modelName}`);
+            return Promise.reject();
+        }
+        modelData = models[matchingModel];
+    } catch (error) {
+        console.error(`Error reading models.json: ${error}`);
+        return Promise.reject();
+    }
+    AI.run(modelData);
+    return Promise.resolve();
+}
 
 async function measureCpuUsage() {
-    await exec('sh setup.sh');
 
     exec('killall -9 -q demo-reporter || true\n' +
         '/tmp/demo-reporter > /tmp/cpu-util.txt &');
 
     const unitTest = core.getInput('run');
-    console.log("Running unit test: " + unitTest);
+    console.log("Testing command: " + unitTest);
     await exec(unitTest);
     await exec('killall -9 -q demo-reporter');
-    await exec('cat /tmp/cpu-util.txt | python3.10 /tmp/spec-power-model/xgb.py --silent --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 > /tmp/energy.txt');
+    await estimateEnergy()
 
     const energyData = fs.readFileSync('/tmp/energy.txt', 'utf8');
     console.log("The data from the file is: " + energyData);
 
-    // Resolve the promise
     return Promise.resolve();
 }
 
@@ -10282,14 +10474,17 @@ async function getMeasurementsFromRepo(octokit, sha) {
         const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
         const path = `.energy/${sha}.json`;
         const ref = `energy`;
+
         console.log(`Getting measurements from ${path} in ${ref}`);
-        return await octokit.rest.repos.getContent({
+
+        const result = await octokit.rest.repos.getContent({
             owner,
             repo,
             path,
             ref,
         });
-        // return JSON.parse(fs.readFileSync(`./.energy/${sha}.json`, 'utf8'));
+        const content = Buffer.from(result.data['content'], 'base64').toString()
+        return JSON.parse(content);
     } catch (error) {
         console.error(`Could not find old measurements: ${error}`);
         return null;
@@ -10298,11 +10493,15 @@ async function getMeasurementsFromRepo(octokit, sha) {
 
 async function createComment(octokit, data, difference, pull_request) {
     const issueNumber = pull_request.number;
-    let body = `⚡ The total energy is: ${data['total_energy']}\n
-    💪 The power is: ${data['power_avg']}\n
-    🕒 The duration is: ${data['duration']}`;
+    let body = `⚡ The total energy is: ${data['total_energy']}\n💪 The power is: ${Math.round((data['power_avg'] + Number.EPSILON) * 100) / 100}\n🕒 The duration is: ${data['duration']}`;
     if (difference !== null) {
-        body += `\n\nThis is ${difference}% more than the base branch.`;
+        if (difference >= -0.5 && difference <= 0.5) {
+            body += '\n\nNo significant difference has been found compared to the base branch.';
+        } else if (difference > 0.5) {
+            body += `\n\n<code style="color : red">${Math.round((difference * 100) + Number.EPSILON)}%</code> lower than the base branch`;
+        } else {
+            body += `\n\n<code style="color : green">${Math.round((difference * 100) + Number.EPSILON)}%</code> higher than the base branch`;
+        }
     }
 
     try {
@@ -10320,13 +10519,14 @@ async function compareToOld(octokit, new_data, old_data) {
     if (old_data === null) {
         return null;
     }
-    console.log(`Old data: ${old_data['cpu']}`);
-    console.log(`New data: ${new_data['cpu']}`);
-    return Math.round(((old_data['cpu'] / new_data['cpu']) + Number.EPSILON) * 100) / 100
+    console.log(`Old data: ${old_data['total_energy']}`);
+    console.log(`New data: ${new_data['total_energy']}`);
+    return Math.round(((old_data['total_energy'] / new_data['total_energy']) + Number.EPSILON) * 100) / 100
 }
 
 async function run() {
     try {
+        setup.run();
         await measureCpuUsage();
 
         const octokit = retrieveOctokit();
@@ -10349,6 +10549,7 @@ async function run() {
     } catch (error) {
         console.error(error);
         core.setFailed(error.message);
+        return Promise.reject();
     }
 }
 

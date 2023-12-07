@@ -3,25 +3,45 @@ const github = require("@actions/github");
 const {Base64} = require("js-base64");
 const fs = require("fs");
 const util = require('util');
+const os = require("os");
 const exec = util.promisify(require('child_process').exec);
+const setup = require('./setup');
+const AI = require('./AI');
+const models = require('./models').models;
 
+async function estimateEnergy() {
+    let modelData;
+    try {
+        const modelName = os.cpus()[0].model;
+        const matchingModel = Object.keys(models).find(model => modelName.includes(model));
+
+        if (matchingModel === undefined || matchingModel === null || matchingModel === '') {
+            console.error(`No matching model found for ${modelName}`);
+            return Promise.reject();
+        }
+        modelData = models[matchingModel];
+    } catch (error) {
+        console.error(`Error reading models.json: ${error}`);
+        return Promise.reject();
+    }
+    AI.run(modelData);
+    return Promise.resolve();
+}
 
 async function measureCpuUsage() {
-    await exec('sh setup.sh');
 
     exec('killall -9 -q demo-reporter || true\n' +
         '/tmp/demo-reporter > /tmp/cpu-util.txt &');
 
     const unitTest = core.getInput('run');
-    console.log("Running unit test: " + unitTest);
+    console.log("Testing command: " + unitTest);
     await exec(unitTest);
     await exec('killall -9 -q demo-reporter');
-    await exec('cat /tmp/cpu-util.txt | python3.10 /tmp/spec-power-model/xgb.py --silent --tdp 240 --cpu-threads 128 --cpu-cores 64 --cpu-make \'amd\' --release-year 2021 --ram 512 --cpu-freq 2250 --cpu-chips 1 > /tmp/energy.txt');
+    await estimateEnergy()
 
     const energyData = fs.readFileSync('/tmp/energy.txt', 'utf8');
     console.log("The data from the file is: " + energyData);
 
-    // Resolve the promise
     return Promise.resolve();
 }
 
@@ -156,14 +176,17 @@ async function getMeasurementsFromRepo(octokit, sha) {
         const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
         const path = `.energy/${sha}.json`;
         const ref = `energy`;
+
         console.log(`Getting measurements from ${path} in ${ref}`);
-        return await octokit.rest.repos.getContent({
+
+        const result = await octokit.rest.repos.getContent({
             owner,
             repo,
             path,
             ref,
         });
-        // return JSON.parse(fs.readFileSync(`./.energy/${sha}.json`, 'utf8'));
+        const content = Buffer.from(result.data['content'], 'base64').toString()
+        return JSON.parse(content);
     } catch (error) {
         console.error(`Could not find old measurements: ${error}`);
         return null;
@@ -172,11 +195,15 @@ async function getMeasurementsFromRepo(octokit, sha) {
 
 async function createComment(octokit, data, difference, pull_request) {
     const issueNumber = pull_request.number;
-    let body = `⚡ The total energy is: ${data['total_energy']}\n
-    💪 The power is: ${data['power_avg']}\n
-    🕒 The duration is: ${data['duration']}`;
+    let body = `⚡ The total energy is: ${data['total_energy']}\n💪 The power is: ${Math.round((data['power_avg'] + Number.EPSILON) * 100) / 100}\n🕒 The duration is: ${data['duration']}`;
     if (difference !== null) {
-        body += `\n\nThis is ${difference}% more than the base branch.`;
+        if (difference >= -0.5 && difference <= 0.5) {
+            body += '\n\nNo significant difference has been found compared to the base branch.';
+        } else if (difference > 0.5) {
+            body += `\n\n<code style="color : red">${Math.round((difference * 100) + Number.EPSILON)}%</code> lower than the base branch`;
+        } else {
+            body += `\n\n<code style="color : green">${Math.round((difference * 100) + Number.EPSILON)}%</code> higher than the base branch`;
+        }
     }
 
     try {
@@ -194,13 +221,14 @@ async function compareToOld(octokit, new_data, old_data) {
     if (old_data === null) {
         return null;
     }
-    console.log(`Old data: ${old_data['cpu']}`);
-    console.log(`New data: ${new_data['cpu']}`);
-    return Math.round(((old_data['cpu'] / new_data['cpu']) + Number.EPSILON) * 100) / 100
+    console.log(`Old data: ${old_data['total_energy']}`);
+    console.log(`New data: ${new_data['total_energy']}`);
+    return Math.round(((old_data['total_energy'] / new_data['total_energy']) + Number.EPSILON) * 100) / 100
 }
 
 async function run() {
     try {
+        setup.run();
         await measureCpuUsage();
 
         const octokit = retrieveOctokit();
@@ -223,6 +251,7 @@ async function run() {
     } catch (error) {
         console.error(error);
         core.setFailed(error.message);
+        return Promise.reject();
     }
 }
 

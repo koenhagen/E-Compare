@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en-UK">
+<head>
+    <meta charset="UTF-8">
+
+    {% seo %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#157878">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
+
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$']]
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <title>{{ page.title }}</title>
+</head>
+<body>
+<header class="page-header" role="banner">
+    <h1 class="project-name">{{ page.title | default: site.title | default: "E-Compare" }}</h1>
+</header>
+
+<main id="content" class="main-content" role="main">
+    {{ content }}
+    <footer class="site-footer">
+        <span class="site-footer-owner">View <a href="{{ site.github.repository_url }}">this tool</a> on GitHub.</span>
+    </footer>
+</main>
+</body>
+</html>
