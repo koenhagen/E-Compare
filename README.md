@@ -1,8 +1,9 @@
-# $\color{green}{\large\textbf{E-Co}}$‎​mpare
+# $\color{lightgreen}{\large\textbf{E-Co}}$‎​mpare
 
 $\color{green}{\large\textbf{E-Co}}$‎​mpare serves as a GitHub workflow tool designed to offer valuable insights into the energy consumption of software, particularly through the comparison of different versions within pull requests. Operating as a black-box system, it utilizes the user's unit tests to provide insights into the energy efficiency impact of code changes, aiding developers in making informed decisions.
 
 ## Implementation
+
 The $\color{green}{\large\textbf{E-Co}}$‎​mpare tool only requires a few line changes compared to standard unit testing workflows. The tool has been purposely built to minimize the amount of changes required to get it implemented. To generate enough energy reports to make the comparison functionality work it's best to have the tool trigger on "push". 
 
 ### Basic implementation
@@ -59,6 +60,7 @@ steps:
 
 #### NodeJS
 ```diff
+steps:
   - uses: actions/checkout@v4
   - name: Use Node.js
     uses: actions/setup-node@v3
@@ -68,7 +70,7 @@ steps:
   - run: npm run build --if-present
 +  - uses: koenhagen/measure-energy-action@v0.16
 +    with:
-+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++      GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
       run: npm test
 ```
 
