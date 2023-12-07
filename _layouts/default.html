@@ -13,7 +13,9 @@
         MathJax = {
             tex: {
                 inlineMath: [['$', '$'], ["\\(", "\\)"]],
-                processEscapes: true,
+            },
+            options: {
+                processHtml: true
             },
             loader: {load: ['[tex]/autoload/all']}
         };
