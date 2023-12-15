@@ -20,7 +20,7 @@ jobs:
   measure-energy:
     runs-on: ubuntu-latest
     permissions: write-all
-    name: A job to measure energy
+    name: Measure energy
     steps:
       - name: Checkout
         id: checkout

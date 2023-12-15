@@ -10330,17 +10330,17 @@ async function estimateEnergy() {
 
 async function measureCpuUsage() {
 
-    exec('killall -9 -q demo-reporter || true\n' +
-        '/tmp/demo-reporter > /tmp/cpu-util.txt &');
 
     const unitTest = core.getInput('run');
     console.log("Testing command: " + unitTest);
-    await exec(unitTest);
+    const count = core.getInput('count');
+    exec('killall -9 -q demo-reporter || true\n' +
+        '/tmp/demo-reporter > /tmp/cpu-util.txt &');
+    for (let i = 0; i < count; i++) {
+        await exec(unitTest);
+    }
     await exec('killall -9 -q demo-reporter');
     await estimateEnergy()
-
-    const energyData = fs.readFileSync('/tmp/energy.txt', 'utf8');
-    console.log("The data from the file is: " + energyData);
 
     return Promise.resolve();
 }
@@ -10359,16 +10359,17 @@ function readEnergyData() {
         const energy = fs.readFileSync("/tmp/energy.txt", {encoding: 'utf8', flag: 'r'});
         const energy_numbers = energy.split('\n');
 
+        const count = core.getInput('count');
         let energy_sum = 0;
         for (let i = 0; i < energy_numbers.length; i++) {
-            energy_sum += Number(energy_numbers[i]);
+            energy_sum += Number(energy_numbers[i]) / count;
         }
         const power_avg = energy_sum / energy_numbers.length;
-
+        const duration = energy_numbers.length / count;
         return {
             "total_energy": energy_sum,
             "power_avg": power_avg,
-            "duration": energy_numbers.length
+            "duration": duration
         };
     } catch (error) {
         console.error(`Could not read data: ${error}`);
@@ -10477,8 +10478,6 @@ async function getMeasurementsFromRepo(octokit, sha) {
         const path = `.energy/${sha}.json`;
         const ref = `energy`;
 
-        console.log(`Getting measurements from ${path} in ${ref}`);
-
         const result = await octokit.rest.repos.getContent({
             owner,
             repo,
@@ -10488,7 +10487,7 @@ async function getMeasurementsFromRepo(octokit, sha) {
         const content = Buffer.from(result.data['content'], 'base64').toString()
         return JSON.parse(content);
     } catch (error) {
-        console.error(`Could not find old measurements: ${error}`);
+        console.error(`Could not find old measurements`);
         return null;
     }
 }
@@ -10500,9 +10499,9 @@ async function createComment(octokit, data, difference, pull_request) {
         if (difference >= -0.5 && difference <= 0.5) {
             body += '\n\nNo significant difference has been found compared to the base branch.';
         } else if (difference > 0.5) {
-            body += `\n\n<code style="color : red">${Math.round((difference * 100) + Number.EPSILON)}%</code> lower than the base branch`;
+            body += `\n\n<span style="color:red">${Math.round((difference * 100) + Number.EPSILON)}%</span> lower than the base branch`;
         } else {
-            body += `\n\n<code style="color : green">${Math.round((difference * 100) + Number.EPSILON)}%</code> higher than the base branch`;
+            body += `\n\n<span style="color : green">${Math.round((difference * 100) + Number.EPSILON)}%</span> higher than the base branch`;
         }
     }
 
