@@ -235,6 +235,7 @@ async function run() {
         await commitReport(octokit, energy_data);
 
         const pull_request = await getPullRequest(octokit, github.context.sha);
+
         if (pull_request === null) {
             return;
         }
