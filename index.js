@@ -161,9 +161,12 @@ async function getForkPoint(pull_request, octokit) {
                 'X-GitHub-Api-Version': '2022-11-28'
             }
         });
-        if (response.data.base_commit.commit.message === 'Add power report') {
-            return response.data.merge_base_commit.parents[0].sha;
-        }
+        // if (response.data.base_commit.commit.message === 'Add power report') {
+        //     return response.data.merge_base_commit.parents[0].sha;
+        // }
+        response.data.merge_base_commit.parents.map((parent) => {
+            console.log(parent.sha);
+        });
         return response.data.merge_base_commit.sha;
     } catch (error) {
         console.error(`Could not find fork point: ${error}`);
@@ -194,7 +197,7 @@ async function getMeasurementsFromRepo(octokit, sha) {
 
 async function createComment(octokit, data, difference, pull_request) {
     const issueNumber = pull_request.number;
-    let body = `⚡ The total energy is: ${data['total_energy']}\n💪 The power is: ${Math.round((data['power_avg'] + Number.EPSILON) * 100) / 100}\n🕒 The duration is: ${data['duration']}`;
+    let body = `⚡ The total energy is: ${Math.round((data['total_energy'] + Number.EPSILON) * 100) / 100}\n💪 The power is: ${Math.round((data['power_avg'] + Number.EPSILON) * 100) / 100}\n🕒 The duration is: ${data['duration']}`;
     if (difference !== null) {
         if (difference >= -0.5 && difference <= 0.5) {
             body += '\n\nNo significant difference has been found compared to the base branch.';
@@ -222,7 +225,8 @@ async function compareToOld(octokit, new_data, old_data) {
     }
     console.log(`Old data: ${old_data['total_energy']}`);
     console.log(`New data: ${new_data['total_energy']}`);
-    return Math.round(((old_data['total_energy'] / new_data['total_energy']) + Number.EPSILON) * 100) / 100
+    const difference = ((newValue - oldValue) / oldValue) * 100;
+    return Math.round(difference * 100 + Number.EPSILON) / 100;
 }
 
 async function run_pull_request() {
