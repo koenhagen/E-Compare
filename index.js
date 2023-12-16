@@ -229,6 +229,11 @@ async function run_pull_request() {
     try {
         const octokit = retrieveOctokit();
         const pull_request = github.context.payload.pull_request;
+        console.log(pull_request);
+        console.log(pull_request.toString());
+        console.log(pull_request.sha);
+        console.log(pull_request.head.sha);
+        console.log(github.context.sha);
         const sha = await getForkPoint(pull_request, octokit);
         if (sha === null) {
             return;
