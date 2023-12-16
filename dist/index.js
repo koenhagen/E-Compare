@@ -10525,14 +10525,34 @@ async function compareToOld(octokit, new_data, old_data) {
     return Math.round(((old_data['total_energy'] / new_data['total_energy']) + Number.EPSILON) * 100) / 100
 }
 
-async function run() {
+async function run_pull_request() {
+    try {
+        const octokit = retrieveOctokit();
+        const pull_request = github.context.payload.pull_request;
+        const sha = await getForkPoint(pull_request, octokit);
+        if (sha === null) {
+            return;
+        }
+        const new_data = await getMeasurementsFromRepo(octokit, github.context.sha);
+        const old_data = await getMeasurementsFromRepo(octokit, sha);
+        const difference = await compareToOld(octokit, new_data, old_data);
+        await createComment(octokit, new_data, difference, pull_request);
+
+    } catch (error) {
+        console.error(error);
+        core.setFailed(error.message);
+        return Promise.reject();
+    }
+}
+
+async function run_push() {
     try {
         setup.run();
         await measureCpuUsage();
 
         const octokit = retrieveOctokit();
-        const energy_data = readEnergyData();
-        await commitReport(octokit, energy_data);
+        const new_data = readEnergyData();
+        await commitReport(octokit, new_data);
 
         const pull_request = await getPullRequest(octokit, github.context.sha);
 
@@ -10544,14 +10564,22 @@ async function run() {
             return;
         }
         const old_data = await getMeasurementsFromRepo(octokit, sha);
-        const difference = await compareToOld(octokit, energy_data, old_data);
-        await createComment(octokit, energy_data, difference, pull_request);
+        const difference = await compareToOld(octokit, new_data, old_data);
+        await createComment(octokit, new_data, difference, pull_request);
 
         return Promise.resolve();
     } catch (error) {
         console.error(error);
         core.setFailed(error.message);
         return Promise.reject();
+    }
+}
+
+async function run() {
+    if (process.env.GITHUB_EVENT_NAME !== 'push') {
+        await run_push();
+    } else if (process.env.GITHUB_EVENT_NAME !== 'pull_request') {
+        await run_pull_request();
     }
 }
 

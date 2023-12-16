@@ -11,9 +11,6 @@ inputs:
     description: 'How many times to run the command'
     required: false
     default: '1'
-outputs:
-  joules:
-    description: 'The amount of Joules it took to run'
 runs:
   using: 'node20'
   main: 'dist/index.js'
