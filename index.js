@@ -164,7 +164,8 @@ async function getForkPoint(pull_request, octokit) {
         // if (response.data.base_commit.commit.message === 'Add power report') {
         //     return response.data.merge_base_commit.parents[0].sha;
         // }
-        response.data.merge_base_commit.parents.map((parent) => {
+
+        pull_request.head.parents.map((parent) => {
             console.log(parent.sha);
         });
         return response.data.merge_base_commit.sha;
@@ -233,15 +234,14 @@ async function run_pull_request() {
     try {
         const octokit = retrieveOctokit();
         const pull_request = github.context.payload.pull_request;
-        console.log(pull_request);
-        console.log(pull_request.sha);
-        console.log(pull_request.head.sha);
-        console.log(github.context.sha);
         const sha = await getForkPoint(pull_request, octokit);
         if (sha === null) {
             return;
         }
-        const new_data = await getMeasurementsFromRepo(octokit, github.context.sha);
+        const new_data = await getMeasurementsFromRepo(octokit, pull_request.head.sha);
+        if (new_data === null) {
+            return;
+        }
         const old_data = await getMeasurementsFromRepo(octokit, sha);
         const difference = await compareToOld(octokit, new_data, old_data);
         await createComment(octokit, new_data, difference, pull_request);
