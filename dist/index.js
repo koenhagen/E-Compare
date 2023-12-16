@@ -10530,7 +10530,6 @@ async function run_pull_request() {
         const octokit = retrieveOctokit();
         const pull_request = github.context.payload.pull_request;
         console.log(pull_request);
-        console.log(pull_request.toString());
         console.log(pull_request.sha);
         console.log(pull_request.head.sha);
         console.log(github.context.sha);
@@ -10581,9 +10580,9 @@ async function run_push() {
 }
 
 async function run() {
-    if (process.env.GITHUB_EVENT_NAME !== 'push') {
+    if (process.env.GITHUB_EVENT_NAME === 'push') {
         await run_push();
-    } else if (process.env.GITHUB_EVENT_NAME !== 'pull_request') {
+    } else if (process.env.GITHUB_EVENT_NAME === 'pull_request') {
         await run_pull_request();
     }
 }
