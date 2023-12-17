@@ -10526,7 +10526,7 @@ async function compareToOld(octokit, new_data, old_data) {
     }
     console.log(`Old data: ${old_data['total_energy']}`);
     console.log(`New data: ${new_data['total_energy']}`);
-    const difference = ((newValue - oldValue) / oldValue) * 100;
+    const difference = ((new_data['total_energy'] - old_data['total_energy']) / old_data['total_energy']) * 100;
     return Math.round(difference * 100 + Number.EPSILON) / 100;
 }
 
