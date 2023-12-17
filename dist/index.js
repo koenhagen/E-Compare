@@ -10465,9 +10465,9 @@ async function getForkPoint(pull_request, octokit) {
         //     return response.data.merge_base_commit.parents[0].sha;
         // }
 
-        pull_request.head.parents.map((parent) => {
-            console.log(parent.sha);
-        });
+        // pull_request.head.parents.map((parent) => {
+        //     console.log(parent.sha);
+        // });
         return response.data.merge_base_commit.sha;
     } catch (error) {
         console.error(`Could not find fork point: ${error}`);
