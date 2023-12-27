@@ -310,13 +310,44 @@ async function run_historic(historic) {
             if (result !== null) {
                 continue;
             }
+            // Get reference to the head of the branch
+            const { data: refData } = await octokit.rest.git.getRef({
+                owner,
+                repo,
+                ref: `heads/energy`,
+            });
 
-            // await octokit.rest.repos.mergeUpstream({
-            //     owner: owner,
-            //     repo: repo,
-            //     branch: `refs/heads/energy`,
-            // });
+            // Get commit that the branch head is pointing to
+            const { data: commitData } = await octokit.rest.git.getCommit({
+                owner,
+                repo,
+                ref: refData.object.sha,
+            });
 
+            // Create new tree with the changes
+            const { data: treeData } = await octokit.rest.git.createTree({
+                owner,
+                repo,
+                base_tree: commitData.tree.sha,
+                // Here you can put your changes, for example:
+                // tree: [{ path: 'file.txt', mode: '100644', type: 'blob', content: 'Hello, World!' }],
+            });
+
+            // Create a new commit
+            const { data: newCommitData } = await octokit.rest.git.createCommit({
+                owner,
+                repo,
+                tree: treeData.sha,
+                parents: [refData.object.sha],
+            });
+
+            // Update the branch head to point to the new commit
+            await octokit.rest.git.updateRef({
+                owner,
+                repo,
+                ref: `heads/energy`,
+                sha: newCommitData.sha,
+            });
             // Merge the new branch into the target branch
             const merge_result = await octokit.rest.repos.merge({
                 owner: owner,
