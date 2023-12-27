@@ -10072,7 +10072,7 @@ function wrappy (fn, cb) {
 
 const { execSync } = __nccwpck_require__(2081);
 
-var setup = function setup(){
+const setup = function setup() {
     try {
 
         // Clone the repository
@@ -10349,9 +10349,10 @@ function retrieveOctokit() {
     const github_token = core.getInput('GITHUB_TOKEN');
     if (!github_token) {
         console.error('Error: No GitHub secrets access');
-        return core.setFailed('No GitHub secrets access');
+        core.setFailed('No GitHub secrets access');
+        throw new Error('No GitHub secrets access'); // Throw an error if the GitHub token couldn't be retrieved
     }
-    return github.getOctokit(github_token);
+    return github.getOctokit(github_token); // Return the Octokit instance if the operation was successful
 }
 
 function readEnergyData() {
@@ -10491,7 +10492,6 @@ async function getMeasurementsFromRepo(octokit, sha) {
         const content = Buffer.from(result.data['content'], 'base64').toString()
         return JSON.parse(content);
     } catch (error) {
-        console.error(`Could not find old measurements`);
         return null;
     }
 }
@@ -10540,6 +10540,7 @@ async function run_pull_request() {
         }
         const new_data = await getMeasurementsFromRepo(octokit, pull_request.head.sha);
         if (new_data === null) {
+            console.error(`Could not find old measurements`);
             return;
         }
         const old_data = await getMeasurementsFromRepo(octokit, sha);
@@ -10583,7 +10584,50 @@ async function run_push() {
     }
 }
 
+async function run_historic(historic) {
+    try {
+        const octokit = retrieveOctokit();
+        const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+        const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+
+
+        const commits = await octokit.rest.repos.listCommits({
+            owner: owner,
+            repo: repo,
+            per_page: historic + 1, // Get one more commit than needed to include the current commit
+        });
+        for (let i = 0; i < commits.data[i].sha; i++) {
+            const commit = commits.data[i];
+
+            // Check if previous commit exists previous commit
+            const result = getMeasurementsFromRepo(octokit, commit.sha);
+            if (result !== null) {
+                continue;
+            }
+
+            // Merge the new branch into the target branch
+            await octokit.rest.repos.merge({
+                owner: owner,
+                repo: repo,
+                base: `refs/heads/energy`,
+                head: commit.sha,
+            });
+        }
+
+    } catch (error) {
+        console.error(error);
+        core.setFailed(error.message);
+        return Promise.reject();
+    }
+
+}
+
 async function run() {
+    const historic = core.getInput('historic');
+    if (historic !== undefined && historic !== null && historic !== '') {
+        await run_historic(historic);
+        return;
+    }
     if (process.env.GITHUB_EVENT_NAME === 'push') {
         await run_push();
     } else if (process.env.GITHUB_EVENT_NAME === 'pull_request') {

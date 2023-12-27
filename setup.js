@@ -1,6 +1,6 @@
 const { execSync } = require('child_process');
 
-var setup = function setup(){
+const setup = function setup() {
     try {
 
         // Clone the repository
