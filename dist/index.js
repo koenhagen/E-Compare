@@ -10555,6 +10555,7 @@ async function run_pull_request() {
 }
 
 async function run_push() {
+    console.log(`Running E-Compare`);
     try {
         setup.run();
         await measureCpuUsage();
@@ -10585,20 +10586,25 @@ async function run_push() {
 }
 
 async function run_historic(historic) {
+    console.log(`Running E-Compare historic mode with ${historic} commits`);
     try {
-        console.log(`Running historic mode with ${historic} commits`);
 
         const octokit = retrieveOctokit();
         const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
         const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+
+        console.log(`octokit: ${octokit}`);
 
         const commits = await octokit.rest.repos.listCommits({
             owner: owner,
             repo: repo,
             per_page: historic + 1, // Get one more commit than needed to include the current commit
         });
+        console.log(`commits: ${commits}`);
         for (let i = 1; i < commits.data[i].sha; i++) {
             const commit = commits.data[i];
+
+            console.log(`commit: ${commit}`);
 
             // Check if previous commit exists previous commit
             const result = await getMeasurementsFromRepo(octokit, commit.sha);
