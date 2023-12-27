@@ -286,34 +286,35 @@ async function run_push() {
 
 async function run_historic(historic) {
     try {
+        console.log(`Running historic mode with ${historic} commits`);
+
         const octokit = retrieveOctokit();
         const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
         const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-
 
         const commits = await octokit.rest.repos.listCommits({
             owner: owner,
             repo: repo,
             per_page: historic + 1, // Get one more commit than needed to include the current commit
         });
-        console.log(commits.data[0]);
-        console.log(commits.data[1]);
-        for (let i = 0; i < commits.data[i].sha; i++) {
+        for (let i = 1; i < commits.data[i].sha; i++) {
             const commit = commits.data[i];
 
             // Check if previous commit exists previous commit
-            const result = getMeasurementsFromRepo(octokit, commit.sha);
+            const result = await getMeasurementsFromRepo(octokit, commit.sha);
+            console.log(`result is ${result}`);
             if (result !== null) {
                 continue;
             }
 
             // Merge the new branch into the target branch
-            await octokit.rest.repos.merge({
+            const merge_result = await octokit.rest.repos.merge({
                 owner: owner,
                 repo: repo,
                 base: `refs/heads/energy`,
                 head: commit.sha,
             });
+            console.log(`Merge result: ${merge_result}`);
         }
 
     } catch (error) {
@@ -328,7 +329,6 @@ async function run() {
     const historic = core.getInput('historic');
     if (historic !== undefined && historic !== null && historic !== '') {
         await run_historic(historic);
-        return;
     }
     if (process.env.GITHUB_EVENT_NAME === 'push') {
         await run_push();
