@@ -10596,6 +10596,8 @@ async function run_historic(historic) {
             repo: repo,
             per_page: historic + 1, // Get one more commit than needed to include the current commit
         });
+        console.log(commits.data[0]);
+        console.log(commits.data[1]);
         for (let i = 0; i < commits.data[i].sha; i++) {
             const commit = commits.data[i];
 

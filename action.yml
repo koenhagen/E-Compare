@@ -11,6 +11,10 @@ inputs:
     description: 'How many times to run the command'
     required: false
     default: '1'
+  historic:
+    description: 'The amount of historic commits to generate reports for'
+    required: false
+    default: ''
 runs:
   using: 'node20'
   main: 'dist/index.js'
