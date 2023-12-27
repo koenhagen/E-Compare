@@ -296,7 +296,7 @@ async function run_historic(historic) {
         const commits = await octokit.rest.repos.listCommits({
             owner: owner,
             repo: repo,
-            per_page: historic + 1, // Get one more commit than needed to include the current commit
+            per_page: historic + 1,
         });
         console.log(`commits: ${commits}`);
         for (let i = 1; i < commits.data.length; i++) {
@@ -311,11 +311,17 @@ async function run_historic(historic) {
                 continue;
             }
 
+            // await octokit.rest.repos.mergeUpstream({
+            //     owner: owner,
+            //     repo: repo,
+            //     branch: `refs/heads/energy`,
+            // });
+
             // Merge the new branch into the target branch
             const merge_result = await octokit.rest.repos.merge({
                 owner: owner,
                 repo: repo,
-                base: `refs/heads/energy`,
+                base: `energy`,
                 head: commit.sha,
             });
             console.log(`Merge result: ${merge_result}`);
