@@ -89,7 +89,7 @@ async function createBranch(octokit, branch) {
             repo: repo,
             ref: `/heads/${branch}`,
         });
-        return branch;
+        return;
     } catch (error) {
         console.log(`Branch ${branch} does not exist. Creating new branch.`);
     }
@@ -105,7 +105,7 @@ async function createBranch(octokit, branch) {
     } catch (error) {
         console.error(`Error while creating branch: ${error}`);
     }
-    return branch;
+    return;
 }
 
 async function commitReport(octokit, content) {
@@ -309,16 +309,10 @@ async function run_historic(historic) {
             if (result !== null) {
                 continue;
             }
+            const branch = 'energy-' + commit.sha.substring(0, 7)
 
             // Create a new branch with the commit as the base
-            const branch = await createBranch(octokit, commit.sha);
-
-
-            // await octokit.rest.repos.mergeUpstream({
-            //     owner: owner,
-            //     repo: repo,
-            //     branch: `refs/heads/energy`,
-            // });
+            await createBranch(octokit, branch);
 
             // Merge the new branch into the target branch
             const merge_result = await octokit.rest.repos.merge({
