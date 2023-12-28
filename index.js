@@ -78,10 +78,9 @@ function readEnergyData() {
     }
 }
 
-async function createBranch(octokit) {
+async function createBranch(octokit, branch) {
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-    const branch = 'energy';
 
     try {
         // Check if branch exists
@@ -114,7 +113,7 @@ async function commitReport(octokit, content) {
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const path = `.energy/${github.context.payload.head_commit.id}.json`;
     const message = "Add power report";
-    const branch = await createBranch(octokit);
+    const branch = await createBranch(octokit, 'energy');
 
     try {
         await octokit.rest.repos.createOrUpdateFileContents({
@@ -310,49 +309,22 @@ async function run_historic(historic) {
             if (result !== null) {
                 continue;
             }
-            // Get reference to the head of the branch
-            const { data: refData } = await octokit.rest.git.getRef({
-                owner,
-                repo,
-                ref: `heads/energy`,
-            });
 
-            // Get commit that the branch head is pointing to
-            const { data: commitData } = await octokit.rest.git.getCommit({
-                owner,
-                repo,
-                ref: refData.object.sha,
-            });
+            // Create a new branch with the commit as the base
+            const branch = await createBranch(octokit, commit.sha);
 
-            // Create new tree with the changes
-            const { data: treeData } = await octokit.rest.git.createTree({
-                owner,
-                repo,
-                base_tree: commitData.tree.sha,
-                // Here you can put your changes, for example:
-                // tree: [{ path: 'file.txt', mode: '100644', type: 'blob', content: 'Hello, World!' }],
-            });
 
-            // Create a new commit
-            const { data: newCommitData } = await octokit.rest.git.createCommit({
-                owner,
-                repo,
-                tree: treeData.sha,
-                parents: [refData.object.sha],
-            });
+            // await octokit.rest.repos.mergeUpstream({
+            //     owner: owner,
+            //     repo: repo,
+            //     branch: `refs/heads/energy`,
+            // });
 
-            // Update the branch head to point to the new commit
-            await octokit.rest.git.updateRef({
-                owner,
-                repo,
-                ref: `heads/energy`,
-                sha: newCommitData.sha,
-            });
             // Merge the new branch into the target branch
             const merge_result = await octokit.rest.repos.merge({
                 owner: owner,
                 repo: repo,
-                base: `energy`,
+                base: `refs/heads/${branch}`,
                 head: commit.sha,
             });
             console.log(`Merge result: ${merge_result}`);
