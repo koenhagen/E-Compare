@@ -78,7 +78,7 @@ function readEnergyData() {
     }
 }
 
-async function createBranch(octokit, branch) {
+async function createBranch(octokit, branch, sha) {
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
 
@@ -100,12 +100,11 @@ async function createBranch(octokit, branch) {
             owner: owner,
             repo: repo,
             ref: `refs/heads/${branch}`,
-            sha: github.context.sha,
+            sha: sha,
         });
     } catch (error) {
         console.error(`Error while creating branch: ${error}`);
     }
-    return;
 }
 
 async function commitReport(octokit, content) {
@@ -113,7 +112,7 @@ async function commitReport(octokit, content) {
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const path = `.energy/${github.context.payload.head_commit.id}.json`;
     const message = "Add power report";
-    const branch = await createBranch(octokit, 'energy');
+    const branch = await createBranch(octokit, 'energy', github.context.sha);
 
     try {
         await octokit.rest.repos.createOrUpdateFileContents({
@@ -301,7 +300,7 @@ async function run_historic(historic) {
         for (let i = 1; i < commits.data.length; i++) {
             const commit = commits.data[i];
 
-            console.log(`commit: ${commit}`);
+            console.log(`commit: ${commit.sha}`);
 
             // Check if previous commit exists previous commit
             const result = await getMeasurementsFromRepo(octokit, commit.sha);
@@ -312,7 +311,7 @@ async function run_historic(historic) {
             const branch = 'energy-' + commit.sha.substring(0, 7)
 
             // Create a new branch with the commit as the base
-            await createBranch(octokit, branch);
+            await createBranch(octokit, branch, commit.sha);
 
             // Merge the new branch into the target branch
             const merge_result = await octokit.rest.repos.merge({
