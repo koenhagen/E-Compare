@@ -113,10 +113,7 @@ async function commitReport(octokit, content) {
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const path = `.energy/${github.context.payload.head_commit.id}.json`;
     const message = "Add power report";
-    const branch = await createBranch(octokit, 'energy', github.context.sha);
-    if (branch === null) {
-        return;
-    }
+    await createBranch(octokit, 'energy', github.context.sha);
     try {
         await octokit.rest.repos.createOrUpdateFileContents({
             owner: owner,
@@ -124,7 +121,7 @@ async function commitReport(octokit, content) {
             path: path,
             message: message,
             content: Base64.encode(JSON.stringify(content)),
-            branch: branch,
+            branch: 'energy',
         });
     } catch (error) {
         console.error(`Error while creating report: ${error}`);
@@ -316,7 +313,12 @@ async function run_historic(historic) {
             // Create a new branch with the commit as the base
             console.log(`Commit.sha: ${commit.sha}`);
             const branch = await createBranch(octokit, branch_name, commit.sha);
-            console.log(`Branch: ${branch.data.sha}`);
+            Object.keys(branch.data).forEach((key) => {
+                console.log(key, branch.data[key]);
+            });
+            Object.keys(branch).forEach((key) => {
+                console.log(key, branch[key]);
+            });
 
             // Create an empty commit
             const { data: new_commit } = await octokit.rest.git.createCommit({
