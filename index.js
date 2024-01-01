@@ -311,16 +311,17 @@ async function run_historic(historic) {
             const branch = 'energy-' + commit.sha.substring(0, 7)
 
             // Create a new branch with the commit as the base
+            console.log(`Commit.sha: ${commit.sha}`);
             await createBranch(octokit, branch, commit.sha);
 
-            // Merge the new branch into the target branch
-            const merge_result = await octokit.rest.repos.merge({
-                owner: owner,
-                repo: repo,
-                base: `refs/heads/${branch}`,
-                head: commit.sha,
-            });
-            console.log(`Merge result: ${merge_result}`);
+            // // Merge the new branch into the target branch
+            // const merge_result = await octokit.rest.repos.merge({
+            //     owner: owner,
+            //     repo: repo,
+            //     base: `refs/heads/${branch}`,
+            //     head: commit.sha,
+            // });
+            // console.log(`Merge result: ${merge_result}`);
         }
 
     } catch (error) {
