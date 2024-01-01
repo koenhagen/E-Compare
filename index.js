@@ -81,27 +81,28 @@ function readEnergyData() {
 async function createBranch(octokit, branch, sha) {
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-
+    let ref;
     try {
         // Check if branch exists
-        await octokit.rest.git.getRef({
+        ref = await octokit.rest.git.getRef({
             owner: owner,
             repo: repo,
             ref: `/heads/${branch}`,
         });
-        return;
+        return ref;
     } catch (error) {
         console.log(`Branch ${branch} does not exist. Creating new branch.`);
     }
 
     try {
         // Create branch
-        await octokit.rest.git.createRef({
+        ref = await octokit.rest.git.createRef({
             owner: owner,
             repo: repo,
             ref: `refs/heads/${branch}`,
             sha: sha,
         });
+        return ref;
     } catch (error) {
         console.error(`Error while creating branch: ${error}`);
     }
@@ -113,7 +114,9 @@ async function commitReport(octokit, content) {
     const path = `.energy/${github.context.payload.head_commit.id}.json`;
     const message = "Add power report";
     const branch = await createBranch(octokit, 'energy', github.context.sha);
-
+    if (branch === null) {
+        return;
+    }
     try {
         await octokit.rest.repos.createOrUpdateFileContents({
             owner: owner,
@@ -308,18 +311,18 @@ async function run_historic(historic) {
             if (result !== null) {
                 continue;
             }
-            const branch = 'energy-' + commit.sha.substring(0, 7)
+            const branch_name = 'energy-' + commit.sha.substring(0, 7)
 
             // Create a new branch with the commit as the base
             console.log(`Commit.sha: ${commit.sha}`);
-            await createBranch(octokit, branch, commit.sha);
+            const branch = await createBranch(octokit, branch_name, commit.sha);
 
             // Create an empty commit
             const { data: new_commit } = await octokit.rest.git.createCommit({
                 owner,
                 repo,
                 message: 'Empty commit to trigger workflow',
-                tree: commit.sha,  // The tree parameter can be the same as the SHA of the commit
+                tree: branch.data.ref,  // The tree parameter can be the same as the SHA of the commit
                 parents: [commit.sha]
             });
 
