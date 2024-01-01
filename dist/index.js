@@ -10616,6 +10616,10 @@ async function run_historic(historic) {
             // Create a new branch with the commit as the base
             console.log(`Commit.sha: ${commit.sha}`);
             const branch = await createBranch(octokit, branch_name, commit.sha);
+            console.log(`Branch: ${branch}`);
+            console.log(`Branch: ${branch.data}`);
+            console.log(`Branch: ${branch.data.ref}`);
+            console.log(`Branch: ${branch.data.object}`);
 
             // Create an empty commit
             const { data: new_commit } = await octokit.rest.git.createCommit({
