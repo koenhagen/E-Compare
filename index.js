@@ -296,7 +296,6 @@ async function run_historic(historic) {
             repo: repo,
             per_page: historic + 1,
         });
-        console.log(`commits: ${commits}`);
         for (let i = 1; i < commits.data.length; i++) {
             const commit = commits.data[i];
 
@@ -304,7 +303,8 @@ async function run_historic(historic) {
 
             // Check if previous commit exists previous commit
             const result = await getMeasurementsFromRepo(octokit, commit.sha);
-            console.log(`result is ${result}`);
+
+            // If it exists, continue
             if (result !== null) {
                 continue;
             }
@@ -314,14 +314,30 @@ async function run_historic(historic) {
             console.log(`Commit.sha: ${commit.sha}`);
             await createBranch(octokit, branch, commit.sha);
 
-            // // Merge the new branch into the target branch
-            // const merge_result = await octokit.rest.repos.merge({
-            //     owner: owner,
-            //     repo: repo,
-            //     base: `refs/heads/${branch}`,
-            //     head: commit.sha,
-            // });
-            // console.log(`Merge result: ${merge_result}`);
+            // Create an empty commit
+            const { data: new_commit } = await octokit.rest.git.createCommit({
+                owner,
+                repo,
+                message: 'Empty commit to trigger workflow',
+                tree: commit.sha,  // The tree parameter can be the same as the SHA of the commit
+                parents: [commit.sha]
+            });
+
+            // Update the branch reference to point to the new commit
+            await octokit.rest.git.updateRef({
+                owner,
+                repo,
+                ref: `heads/${branch}`,
+                sha: new_commit.sha,
+                force: true
+            });
+
+            // Delete the branch
+            await octokit.rest.git.deleteRef({
+                owner,
+                repo,
+                ref: `heads/${branch}`,
+            });
         }
 
     } catch (error) {
