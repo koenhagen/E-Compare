@@ -320,14 +320,17 @@ async function run_historic(historic) {
                 repo,
                 message: 'Empty commit to trigger workflow',
                 tree: commit.commit.tree.sha,  // The tree parameter can be the same as the SHA of the commit
-                // parents: [commit.sha]
+                parents: [commit.sha]
             });
+
+            console.log(`new commit: ${new_commit}`);
+            console.log(`new commit sha: ${new_commit.sha}`);
 
             // Update the branch reference to point to the new commit
             await octokit.rest.git.updateRef({
                 owner,
                 repo,
-                ref: `heads/${branch}`,
+                ref: `heads/${branch_name}`,
                 sha: new_commit.sha,
                 force: true
             });
