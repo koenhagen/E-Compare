@@ -22,5 +22,5 @@ jobs:
         with:
           run: sleep 10
           count: 5
-          historic: 5
+          historic: 10
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
