@@ -10639,7 +10639,7 @@ async function run_historic(historic) {
             await octokit.rest.git.deleteRef({
                 owner,
                 repo,
-                ref: `heads/${branch}`,
+                ref: `heads/${branch_name}`,
             });
         }
 
