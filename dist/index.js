@@ -10618,10 +10618,13 @@ async function run_historic(historic) {
             const { data: new_commit } = await octokit.rest.git.createCommit({
                 owner,
                 repo,
-                message: 'Empty commit',
+                message: 'Empty commit to trigger workflow',
                 tree: commit.commit.tree.sha,  // The tree parameter can be the same as the SHA of the commit
                 parents: [commit.sha]
             });
+
+            console.log(`new commit sha: ${new_commit.sha}`);
+            console.log(`heads/${branch_name}`)
 
             //Create pull request
             const pull_request = await octokit.rest.pulls.create({
