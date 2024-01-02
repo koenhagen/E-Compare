@@ -10612,7 +10612,7 @@ async function run_historic(historic) {
 
             // Create a new branch with the commit as the base
             const branch = await createBranch(octokit, branch_name, commit.sha);
-
+            console.log(`tree sha: ${commit.commit.tree.sha}`);
 
             // Create an empty commit
             const { data: new_commit } = await octokit.rest.git.createCommit({
@@ -10620,7 +10620,7 @@ async function run_historic(historic) {
                 repo,
                 message: 'Empty commit to trigger workflow',
                 tree: commit.commit.tree.sha,  // The tree parameter can be the same as the SHA of the commit
-                parents: [commit.sha]
+                // parents: [commit.sha]
             });
 
             // Update the branch reference to point to the new commit
