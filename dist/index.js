@@ -10626,6 +10626,16 @@ async function run_historic(historic) {
             console.log(`new commit sha: ${new_commit.sha}`);
             console.log(`heads/${branch_name}`)
 
+            // Update the branch reference to point to the new commit
+            await octokit.rest.git.updateRef({
+                owner,
+                repo,
+                ref: `heads/${branch_name}`,
+                sha: new_commit.sha,
+                force: true
+            });
+
+
             //Create pull request
             const pull_request = await octokit.rest.pulls.create({
                 owner,
@@ -10634,15 +10644,6 @@ async function run_historic(historic) {
                 head: branch_name,
                 base: 'main'
             });
-
-            // // Update the branch reference to point to the new commit
-            // await octokit.rest.git.updateRef({
-            //     owner,
-            //     repo,
-            //     ref: `heads/${branch_name}`,
-            //     sha: new_commit.sha,
-            //     force: true
-            // });
 
             // Delete the branch
             // await octokit.rest.git.deleteRef({
