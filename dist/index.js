@@ -10608,7 +10608,7 @@ async function run_historic(historic) {
             if (result !== null) {
                 continue;
             }
-            const branch_name = 'energy-' + commit.sha.substring(0, 7) + '-' + commit.commit.author.date.substring(0, 19);
+            const branch_name = 'energy-' + commit.commit.author.date.substring(0, 19).replaceAll(':', '-').replaceAll('T', '-');
 
             // Create a new branch with the commit as the base
             await createBranch(octokit, branch_name, commit.sha);
