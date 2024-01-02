@@ -10611,7 +10611,7 @@ async function run_historic(historic) {
             const branch_name = 'energy-' + commit.sha.substring(0, 7)
 
             // Create a new branch with the commit as the base
-            const branch = await createBranch(octokit, branch_name, commit.sha);
+            await createBranch(octokit, branch_name, commit.sha);
             console.log(`tree sha: ${commit.commit.tree.sha}`);
 
             // Create an empty commit
@@ -10623,8 +10623,8 @@ async function run_historic(historic) {
                 parents: [commit.sha]
             });
 
-            console.log(`new commit: ${new_commit}`);
             console.log(`new commit sha: ${new_commit.sha}`);
+            console.log(`heads/${branch_name}`)
 
             // Update the branch reference to point to the new commit
             await octokit.rest.git.updateRef({
