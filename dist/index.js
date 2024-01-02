@@ -10603,11 +10603,11 @@ async function run_historic(historic) {
 
             // Check if previous commit exists previous commit
             const result = await getMeasurementsFromRepo(octokit, commit.sha);
-
-            // If it exists, continue
-            if (result !== null) {
-                continue;
-            }
+            console.log(`result ${result}`)
+            // // If it exists, continue
+            // if (result !== null) {
+            //     continue;
+            // }
             const branch_name = 'energy-' + commit.commit.author.date.substring(0, 19).replaceAll(':', '-').replaceAll('T', '-');
 
             // Create a new branch with the commit as the base
@@ -10635,16 +10635,6 @@ async function run_historic(historic) {
                 force: true
             });
 
-
-            //Create pull request
-            const pull_request = await octokit.rest.pulls.create({
-                owner,
-                repo,
-                title: 'Energy measurement',
-                head: branch_name,
-                base: 'main'
-            });
-
             // Delete the branch
             // await octokit.rest.git.deleteRef({
             //     owner,
@@ -10659,6 +10649,19 @@ async function run_historic(historic) {
         return Promise.reject();
     }
 
+    try {
+        //Create pull request
+        const pull_request = await octokit.rest.pulls.create({
+            owner,
+            repo,
+            title: 'Energy measurement',
+            head: branch_name,
+            base: 'main'
+        });
+    } catch (error) {
+        console.error(error);
+    }
+    return Promise.resolve();
 }
 
 async function run() {
