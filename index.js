@@ -150,6 +150,9 @@ async function getForkPoint(pull_request, octokit) {
     try {
         const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
         const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+        console.log(`base: ${pull_request.base.ref}`);
+        console.log(`head: ${pull_request.base}`);
+        console.log(`head: ${pull_request}`);
         const basehead = `${pull_request.base.ref}...${pull_request.head.ref}`
 
         const response = await octokit.request(`GET /repos/{owner}/{repo}/compare/{basehead}`, {
@@ -238,10 +241,14 @@ async function run_pull_request() {
         }
         const new_data = await getMeasurementsFromRepo(octokit, pull_request.head.sha);
         if (new_data === null) {
-            console.error(`Could not find old measurements`);
+            console.error(`Could not find new measurements`);
             return;
         }
         const old_data = await getMeasurementsFromRepo(octokit, sha);
+        if (new_data === null) {
+            console.error(`Could not find old measurements`);
+            return;
+        }
         const difference = await compareToOld(octokit, new_data, old_data);
         await createComment(octokit, new_data, difference, pull_request);
 
