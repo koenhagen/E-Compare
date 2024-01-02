@@ -311,21 +311,15 @@ async function run_historic(historic) {
             const branch_name = 'energy-' + commit.sha.substring(0, 7)
 
             // Create a new branch with the commit as the base
-            console.log(`Commit.sha: ${commit.sha}`);
             const branch = await createBranch(octokit, branch_name, commit.sha);
-            Object.keys(branch.data).forEach((key) => {
-                console.log(key, branch.data[key]);
-            });
-            Object.keys(branch).forEach((key) => {
-                console.log(key, branch[key]);
-            });
+
 
             // Create an empty commit
             const { data: new_commit } = await octokit.rest.git.createCommit({
                 owner,
                 repo,
                 message: 'Empty commit to trigger workflow',
-                tree: branch.data.sha,  // The tree parameter can be the same as the SHA of the commit
+                tree: commit.commit.tree.sha,  // The tree parameter can be the same as the SHA of the commit
                 parents: [commit.sha]
             });
 
