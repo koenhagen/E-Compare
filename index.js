@@ -336,11 +336,11 @@ async function run_historic(historic) {
             });
 
             // Delete the branch
-            await octokit.rest.git.deleteRef({
-                owner,
-                repo,
-                ref: `heads/${branch_name}`,
-            });
+            // await octokit.rest.git.deleteRef({
+            //     owner,
+            //     repo,
+            //     ref: `heads/${branch_name}`,
+            // });
         }
 
     } catch (error) {
