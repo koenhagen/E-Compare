@@ -308,20 +308,20 @@ async function run_historic(historic) {
             if (result !== null) {
                 continue;
             }
-            const branch_name = 'energy-' + commit.sha.substring(0, 7) + commit.commit.author.date.substring(0, 10).replaceAll('-', '/');
+            const branch_name = 'energy-' + commit.sha.substring(0, 7) + '-' + commit.commit.author.date.substring(0, 19).replaceAll('-', '/');
 
             // Create a new branch with the commit as the base
             await createBranch(octokit, branch_name, commit.sha);
             console.log(`tree sha: ${commit.commit.tree.sha}`);
 
-            // // Create an empty commit
-            // const { data: new_commit } = await octokit.rest.git.createCommit({
-            //     owner,
-            //     repo,
-            //     message: 'Empty commit to trigger workflow',
-            //     tree: commit.commit.tree.sha,  // The tree parameter can be the same as the SHA of the commit
-            //     parents: [commit.sha]
-            // });
+            // Create an empty commit
+            const { data: new_commit } = await octokit.rest.git.createCommit({
+                owner,
+                repo,
+                message: 'Empty commit',
+                tree: commit.commit.tree.sha,  // The tree parameter can be the same as the SHA of the commit
+                parents: [commit.sha]
+            });
 
             //Create pull request
             const pull_request = await octokit.rest.pulls.create({
