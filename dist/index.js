@@ -10532,6 +10532,7 @@ async function compareToOld(octokit, new_data, old_data) {
 }
 
 async function run_pull_request() {
+    console.log(`Running E-Compare pull request mode`);
     try {
         const octokit = retrieveOctokit();
         const pull_request = github.context.payload.pull_request;
@@ -10560,7 +10561,7 @@ async function run_pull_request() {
 }
 
 async function run_push() {
-    console.log(`Running E-Compare`);
+    console.log(`Running E-Compare push mode`);
     try {
         setup.run();
         await measureCpuUsage();
@@ -10592,46 +10593,36 @@ async function run_push() {
 
 async function run_historic(historic) {
     console.log(`Running E-Compare historic mode with ${historic} commits`);
-    try {
+    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
 
-        const octokit = retrieveOctokit();
-        const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
-        const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+    const octokit = retrieveOctokit();
 
-        const commits = await octokit.rest.repos.listCommits({
-            owner: owner,
-            repo: repo,
-            per_page: historic + 1,
-        });
-        for (let i = 1; i < commits.data.length; i++) {
+    const commits = await octokit.rest.repos.listCommits({
+        owner: owner,
+        repo: repo,
+        per_page: historic + 1,
+    });
+    for (let i = 1; i < commits.data.length; i++) {
+
+        try {
             const commit = commits.data[i];
 
             console.log(`commit: ${commit.sha}`);
 
-            // Check if previous commit exists previous commit
-            const result = await getMeasurementsFromRepo(octokit, commit.sha);
-            console.log(`result ${result}`)
-            // // If it exists, continue
-            // if (result !== null) {
-            //     continue;
-            // }
             const branch_name = 'energy-' + commit.commit.author.date.substring(0, 19).replaceAll(':', '-').replaceAll('T', '-');
 
             // Create a new branch with the commit as the base
             await createBranch(octokit, branch_name, commit.sha);
-            console.log(`tree sha: ${commit.commit.tree.sha}`);
 
             // Create an empty commit
-            const { data: new_commit } = await octokit.rest.git.createCommit({
+            const {data: new_commit} = await octokit.rest.git.createCommit({
                 owner,
                 repo,
                 message: 'Empty commit to trigger workflow',
                 tree: commit.commit.tree.sha,  // The tree parameter can be the same as the SHA of the commit
                 parents: [commit.sha]
             });
-
-            console.log(`new commit sha: ${new_commit.sha}`);
-            console.log(`heads/${branch_name}`)
 
             // Update the branch reference to point to the new commit
             await octokit.rest.git.updateRef({
@@ -10642,31 +10633,31 @@ async function run_historic(historic) {
                 force: true
             });
 
-            // Delete the branch
-            // await octokit.rest.git.deleteRef({
-            //     owner,
-            //     repo,
-            //     ref: `heads/${branch_name}`,
-            // });
+        } catch (error) {
+            console.error(error);
+            core.setFailed(error.message);
+            return Promise.reject();
         }
 
-    } catch (error) {
-        console.error(error);
-        core.setFailed(error.message);
-        return Promise.reject();
-    }
+        try {
+            //Create pull request
+            const pull_request = await octokit.rest.pulls.create({
+                owner,
+                repo,
+                title: 'Energy measurement',
+                head: branch_name,
+                base: 'main'
+            });
+        } catch (error) {
+            console.error(error);
+        }
 
-    try {
-        //Create pull request
-        const pull_request = await octokit.rest.pulls.create({
-            owner,
-            repo,
-            title: 'Energy measurement',
-            head: branch_name,
-            base: 'main'
-        });
-    } catch (error) {
-        console.error(error);
+        // Delete the branch
+        // await octokit.rest.git.deleteRef({
+        //     owner,
+        //     repo,
+        //     ref: `heads/${branch_name}`,
+        // });
     }
     return Promise.resolve();
 }
