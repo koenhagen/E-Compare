@@ -10546,7 +10546,7 @@ async function run_pull_request() {
             return;
         }
         const old_data = await getMeasurementsFromRepo(octokit, sha);
-        if (new_data === null) {
+        if (old_data === null) {
             console.error(`Could not find old measurements`);
             return;
         }
@@ -10605,12 +10605,12 @@ async function run_historic(historic) {
     });
     for (let i = 1; i < commits.data.length; i++) {
 
+        const commit = commits.data[i];
+
+        console.log(`commit: ${commit.sha}`);
+        const branch_name = 'energy-' + commit.commit.author.date.substring(0, 19).replaceAll(':', '-').replaceAll('T', '-');
+
         try {
-            const commit = commits.data[i];
-
-            console.log(`commit: ${commit.sha}`);
-
-            const branch_name = 'energy-' + commit.commit.author.date.substring(0, 19).replaceAll(':', '-').replaceAll('T', '-');
 
             // Create a new branch with the commit as the base
             await createBranch(octokit, branch_name, commit.sha);
@@ -10641,7 +10641,7 @@ async function run_historic(historic) {
 
         try {
             //Create pull request
-            const pull_request = await octokit.rest.pulls.create({
+            await octokit.rest.pulls.create({
                 owner,
                 repo,
                 title: 'Energy measurement',
