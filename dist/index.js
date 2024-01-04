@@ -10611,6 +10611,9 @@ async function run_historic(historic) {
         repo: repo,
         per_page: historic + 1,
     });
+    const branch_name = 'energy-' + commits[5].commit.author.date.substring(0, 19).replaceAll(':', '-').replaceAll('T', '-');
+    const result = await createBranch(octokit, branch_name, commits[5].sha);
+    /*
     for (let i = 1; i < commits.data.length; i++) {
 
         const commit = commits.data[i];
@@ -10625,7 +10628,6 @@ async function run_historic(historic) {
             if (result === 'exists') {
                 continue;
             }
-            /*
 
             // Create an empty commit
             const {data: new_commit} = await octokit.rest.git.createCommit({
@@ -10645,13 +10647,12 @@ async function run_historic(historic) {
             //     force: true
             // });
 
-             */
         } catch (error) {
             console.error(error);
             core.setFailed(error.message);
             return Promise.reject();
         }
-        /*
+
         try {
             //Create pull request
             await octokit.rest.pulls.create({
@@ -10664,7 +10665,7 @@ async function run_historic(historic) {
         } catch (error) {
             console.error(error);
         }
-        */
+
         // Delete the branch
         // await octokit.rest.git.deleteRef({
         //     owner,
@@ -10674,6 +10675,7 @@ async function run_historic(historic) {
     }
 
 
+*/
 
     return Promise.resolve();
 }
