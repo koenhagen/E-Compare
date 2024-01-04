@@ -81,10 +81,9 @@ function readEnergyData() {
 async function createBranch(octokit, branch, sha) {
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-    let ref;
     try {
         // Check if branch exists
-        ref = await octokit.rest.git.getRef({
+        await octokit.rest.git.getRef({
             owner: owner,
             repo: repo,
             ref: `/heads/${branch}`,
@@ -94,9 +93,17 @@ async function createBranch(octokit, branch, sha) {
         console.log(`Branch ${branch} does not exist. Creating new branch.`);
     }
 
+    // Create branch
+    await octokit.rest.git.createRef({
+        owner: owner,
+        repo: repo,
+        ref: `refs/heads/${branch}`,
+        sha: sha,
+    });
+
     try {
         // Create branch
-        ref = await octokit.rest.git.createRef({
+        await octokit.rest.git.createRef({
             owner: owner,
             repo: repo,
             ref: `refs/heads/${branch}`,
@@ -318,6 +325,7 @@ async function run_historic(historic) {
             if (result === 'exists') {
                 continue;
             }
+            /*
 
             // Create an empty commit
             const {data: new_commit} = await octokit.rest.git.createCommit({
@@ -337,12 +345,13 @@ async function run_historic(historic) {
             //     force: true
             // });
 
+             */
         } catch (error) {
             console.error(error);
             core.setFailed(error.message);
             return Promise.reject();
         }
-
+        /*
         try {
             //Create pull request
             await octokit.rest.pulls.create({
@@ -355,7 +364,7 @@ async function run_historic(historic) {
         } catch (error) {
             console.error(error);
         }
-
+        */
         // Delete the branch
         // await octokit.rest.git.deleteRef({
         //     owner,
@@ -363,6 +372,9 @@ async function run_historic(historic) {
         //     ref: `heads/${branch_name}`,
         // });
     }
+
+
+
     return Promise.resolve();
 }
 
