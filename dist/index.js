@@ -10628,14 +10628,14 @@ async function run_historic(historic) {
                 parents: [commit.sha]
             });
 
-            // Update the branch reference to point to the new commit
-            await octokit.rest.git.updateRef({
-                owner,
-                repo,
-                ref: `heads/${branch_name}`,
-                sha: new_commit.sha,
-                force: true
-            });
+            // // Update the branch reference to point to the new commit
+            // await octokit.rest.git.updateRef({
+            //     owner,
+            //     repo,
+            //     ref: `heads/${branch_name}`,
+            //     sha: new_commit.sha,
+            //     force: true
+            // });
 
         } catch (error) {
             console.error(error);
