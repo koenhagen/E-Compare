@@ -89,7 +89,7 @@ async function createBranch(octokit, branch, sha) {
             repo: repo,
             ref: `/heads/${branch}`,
         });
-        return ref;
+        return 'exists';
     } catch (error) {
         console.log(`Branch ${branch} does not exist. Creating new branch.`);
     }
@@ -102,9 +102,10 @@ async function createBranch(octokit, branch, sha) {
             ref: `refs/heads/${branch}`,
             sha: sha,
         });
-        return ref;
+        return 'success';
     } catch (error) {
         console.error(`Error while creating branch: ${error}`);
+        return 'failed';
     }
 }
 
@@ -313,13 +314,16 @@ async function run_historic(historic) {
         try {
 
             // Create a new branch with the commit as the base
-            await createBranch(octokit, branch_name, commit.sha);
+            const result = await createBranch(octokit, branch_name, commit.sha);
+            if (result === 'exists') {
+                continue;
+            }
 
             // Create an empty commit
             const {data: new_commit} = await octokit.rest.git.createCommit({
                 owner,
                 repo,
-                message: 'Empty commit to trigger workflow',
+                message: 'Empty commit',
                 tree: commit.commit.tree.sha,  // The tree parameter can be the same as the SHA of the commit
                 parents: [commit.sha]
             });
