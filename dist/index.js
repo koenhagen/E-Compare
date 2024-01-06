@@ -347,20 +347,17 @@ const gBase64 = {
 // and finally,
 
 
-// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var core = __nccwpck_require__(1013);
-var core_default = /*#__PURE__*/__nccwpck_require__.n(core);
 ;// CONCATENATED MODULE: ./functions/GitHub.js
 
-
+const core = __nccwpck_require__(1013);
 
 const github = __nccwpck_require__(3922);
 
 function retrieveOctokit() {
-    const github_token = core_default().getInput('GITHUB_TOKEN');
+    const github_token = core.getInput('GITHUB_TOKEN');
     if (!github_token) {
         console.error('Error: No GitHub secrets access');
-        core_default().setFailed('No GitHub secrets access');
+        core.setFailed('No GitHub secrets access');
         throw new Error('No GitHub secrets access'); // Throw an error if the GitHub token couldn't be retrieved
     }
     return github.getOctokit(github_token); // Return the Octokit instance if the operation was successful
@@ -10536,18 +10533,6 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__nccwpck_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => (module['default']) :
-/******/ 				() => (module);
-/******/ 			__nccwpck_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter functions for harmony exports
