@@ -10601,6 +10601,7 @@ async function run_historic(historic) {
     const commits = await octokit.rest.repos.listCommits({
         owner: owner,
         repo: repo,
+        page: 1,
         per_page: historic + 1,
     });
     console.log(`commit length: ${commits.data.length}`)
