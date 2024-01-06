@@ -308,9 +308,7 @@ async function run_historic(historic) {
         repo: repo,
         per_page: historic + 1,
     });
-    const branch_name = 'energy-' + commits.data[9].commit.author.date.substring(0, 19).replaceAll(':', '-').replaceAll('T', '-');
-    const result = await createBranch(octokit, branch_name, commits.data[9].sha);
-    /*
+
     for (let i = 1; i < commits.data.length; i++) {
 
         const commit = commits.data[i];
@@ -370,10 +368,6 @@ async function run_historic(historic) {
         //     ref: `heads/${branch_name}`,
         // });
     }
-
-
-*/
-
     return Promise.resolve();
 }
 
