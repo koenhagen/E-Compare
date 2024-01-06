@@ -303,7 +303,7 @@ async function run_historic(historic) {
         repo: repo,
         per_page: historic + 1,
     });
-
+    console.log(`commit length: ${commits.data.length}`)
     for (let i = 1; i < commits.data.length; i++) {
 
         const commit = commits.data[i];
