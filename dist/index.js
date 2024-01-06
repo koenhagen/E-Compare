@@ -10393,11 +10393,6 @@ async function createBranch(octokit, branch, sha) {
         console.log(`Branch ${branch} does not exist. Creating new branch.`);
     }
 
-    console.log(`owner: ${owner}`);
-    console.log(`repo: ${repo}`);
-    console.log(`Creating branch ${branch}`);
-    console.log(`sha: ${sha}`);
-
     try {
         // Create branch
         await octokit.rest.git.createRef({
@@ -10624,14 +10619,14 @@ async function run_historic(historic) {
                 continue;
             }
 
-            // Create an empty commit
-            const {data: new_commit} = await octokit.rest.git.createCommit({
-                owner,
-                repo,
-                message: 'Empty commit',
-                tree: commit.commit.tree.sha,  // The tree parameter can be the same as the SHA of the commit
-                parents: [commit.sha]
-            });
+            // // Create an empty commit
+            // const {data: new_commit} = await octokit.rest.git.createCommit({
+            //     owner,
+            //     repo,
+            //     message: 'Empty commit',
+            //     tree: commit.commit.tree.sha,  // The tree parameter can be the same as the SHA of the commit
+            //     parents: [commit.sha]
+            // });
 
             // // Update the branch reference to point to the new commit
             // await octokit.rest.git.updateRef({
@@ -10648,18 +10643,18 @@ async function run_historic(historic) {
             return Promise.reject();
         }
 
-        try {
-            //Create pull request
-            await octokit.rest.pulls.create({
-                owner,
-                repo,
-                title: 'Energy measurement',
-                head: branch_name,
-                base: 'main'
-            });
-        } catch (error) {
-            console.error(error);
-        }
+        // try {
+        //     //Create pull request
+        //     await octokit.rest.pulls.create({
+        //         owner,
+        //         repo,
+        //         title: 'Energy measurement',
+        //         head: branch_name,
+        //         base: 'main'
+        //     });
+        // } catch (error) {
+        //     console.error(error);
+        // }
 
         // Delete the branch
         // await octokit.rest.git.deleteRef({
