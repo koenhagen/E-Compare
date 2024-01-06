@@ -10393,13 +10393,10 @@ async function createBranch(octokit, branch, sha) {
         console.log(`Branch ${branch} does not exist. Creating new branch.`);
     }
 
-    // Create branch
-    await octokit.rest.git.createRef({
-        owner: owner,
-        repo: repo,
-        ref: `refs/heads/${branch}`,
-        sha: sha,
-    });
+    console.log(`owner: ${owner}`);
+    console.log(`repo: ${repo}`);
+    console.log(`Creating branch ${branch}`);
+    console.log(`sha: ${sha}`);
 
     try {
         // Create branch
