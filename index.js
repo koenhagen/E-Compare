@@ -298,11 +298,14 @@ async function run_historic(historic) {
 
     const octokit = retrieveOctokit();
 
+    console.log(historic);
+    console.log(historic + 1);
+    console.log(Number(historic) + 1);
     const commits = await octokit.rest.repos.listCommits({
         owner: owner,
         repo: repo,
         page: 1,
-        per_page: historic + 1,
+        per_page: Number(historic) + 1,
     });
     console.log(`commit length: ${commits.data.length}`)
     for (let i = 1; i < commits.data.length; i++) {
