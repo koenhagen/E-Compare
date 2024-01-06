@@ -49,9 +49,10 @@ function retrieveOctokit() {
     const github_token = core.getInput('GITHUB_TOKEN');
     if (!github_token) {
         console.error('Error: No GitHub secrets access');
-        return core.setFailed('No GitHub secrets access');
+        core.setFailed('No GitHub secrets access');
+        throw new Error('No GitHub secrets access'); // Throw an error if the GitHub token couldn't be retrieved
     }
-    return github.getOctokit(github_token);
+    return github.getOctokit(github_token); // Return the Octokit instance if the operation was successful
 }
 
 function readEnergyData() {
@@ -77,11 +78,9 @@ function readEnergyData() {
     }
 }
 
-async function createBranch(octokit) {
+async function createBranch(octokit, branch, sha) {
     const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-    const branch = 'energy';
-
     try {
         // Check if branch exists
         await octokit.rest.git.getRef({
@@ -89,10 +88,15 @@ async function createBranch(octokit) {
             repo: repo,
             ref: `/heads/${branch}`,
         });
-        return branch;
+        return 'exists';
     } catch (error) {
         console.log(`Branch ${branch} does not exist. Creating new branch.`);
     }
+
+    console.log(`owner: ${owner}`);
+    console.log(`repo: ${repo}`);
+    console.log(`Creating branch ${branch}`);
+    console.log(`sha: ${sha}`);
 
     try {
         // Create branch
@@ -100,12 +104,13 @@ async function createBranch(octokit) {
             owner: owner,
             repo: repo,
             ref: `refs/heads/${branch}`,
-            sha: github.context.sha,
+            sha: sha,
         });
+        return 'success';
     } catch (error) {
         console.error(`Error while creating branch: ${error}`);
+        return 'failed';
     }
-    return branch;
 }
 
 async function commitReport(octokit, content) {
@@ -113,8 +118,7 @@ async function commitReport(octokit, content) {
     const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
     const path = `.energy/${github.context.payload.head_commit.id}.json`;
     const message = "Add power report";
-    const branch = await createBranch(octokit);
-
+    await createBranch(octokit, 'energy', github.context.sha);
     try {
         await octokit.rest.repos.createOrUpdateFileContents({
             owner: owner,
@@ -122,7 +126,7 @@ async function commitReport(octokit, content) {
             path: path,
             message: message,
             content: Base64.encode(JSON.stringify(content)),
-            branch: branch,
+            branch: 'energy',
         });
     } catch (error) {
         console.error(`Error while creating report: ${error}`);
@@ -151,6 +155,9 @@ async function getForkPoint(pull_request, octokit) {
     try {
         const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
         const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+        console.log(`base: ${pull_request.base.ref}`);
+        console.log(`head: ${pull_request.base}`);
+        console.log(`head: ${pull_request}`);
         const basehead = `${pull_request.base.ref}...${pull_request.head.ref}`
 
         const response = await octokit.request(`GET /repos/{owner}/{repo}/compare/{basehead}`, {
@@ -161,9 +168,13 @@ async function getForkPoint(pull_request, octokit) {
                 'X-GitHub-Api-Version': '2022-11-28'
             }
         });
-        if (response.data.base_commit.commit.message === 'Add power report') {
-            return response.data.merge_base_commit.parents[0].sha;
-        }
+        // if (response.data.base_commit.commit.message === 'Add power report') {
+        //     return response.data.merge_base_commit.parents[0].sha;
+        // }
+
+        // pull_request.head.parents.map((parent) => {
+        //     console.log(parent.sha);
+        // });
         return response.data.merge_base_commit.sha;
     } catch (error) {
         console.error(`Could not find fork point: ${error}`);
@@ -187,14 +198,13 @@ async function getMeasurementsFromRepo(octokit, sha) {
         const content = Buffer.from(result.data['content'], 'base64').toString()
         return JSON.parse(content);
     } catch (error) {
-        console.error(`Could not find old measurements`);
         return null;
     }
 }
 
 async function createComment(octokit, data, difference, pull_request) {
     const issueNumber = pull_request.number;
-    let body = `⚡ The total energy is: ${data['total_energy']}\n💪 The power is: ${Math.round((data['power_avg'] + Number.EPSILON) * 100) / 100}\n🕒 The duration is: ${data['duration']}`;
+    let body = `⚡ The total energy is: ${Math.round((data['total_energy'] + Number.EPSILON) * 100) / 100}\n💪 The power is: ${Math.round((data['power_avg'] + Number.EPSILON) * 100) / 100}\n🕒 The duration is: ${data['duration']}`;
     if (difference !== null) {
         if (difference >= -0.5 && difference <= 0.5) {
             body += '\n\nNo significant difference has been found compared to the base branch.';
@@ -222,23 +232,29 @@ async function compareToOld(octokit, new_data, old_data) {
     }
     console.log(`Old data: ${old_data['total_energy']}`);
     console.log(`New data: ${new_data['total_energy']}`);
-    return Math.round(((old_data['total_energy'] / new_data['total_energy']) + Number.EPSILON) * 100) / 100
+    const difference = ((new_data['total_energy'] - old_data['total_energy']) / old_data['total_energy']) * 100;
+    return Math.round(difference * 100 + Number.EPSILON) / 100;
 }
 
 async function run_pull_request() {
+    console.log(`Running E-Compare pull request mode`);
     try {
         const octokit = retrieveOctokit();
         const pull_request = github.context.payload.pull_request;
-        console.log(pull_request);
-        console.log(pull_request.sha);
-        console.log(pull_request.head.sha);
-        console.log(github.context.sha);
         const sha = await getForkPoint(pull_request, octokit);
         if (sha === null) {
             return;
         }
-        const new_data = await getMeasurementsFromRepo(octokit, github.context.sha);
+        const new_data = await getMeasurementsFromRepo(octokit, pull_request.head.sha);
+        if (new_data === null) {
+            console.error(`Could not find new measurements`);
+            return;
+        }
         const old_data = await getMeasurementsFromRepo(octokit, sha);
+        if (old_data === null) {
+            console.error(`Could not find old measurements`);
+            return;
+        }
         const difference = await compareToOld(octokit, new_data, old_data);
         await createComment(octokit, new_data, difference, pull_request);
 
@@ -250,6 +266,7 @@ async function run_pull_request() {
 }
 
 async function run_push() {
+    console.log(`Running E-Compare push mode`);
     try {
         setup.run();
         await measureCpuUsage();
@@ -279,7 +296,92 @@ async function run_push() {
     }
 }
 
+async function run_historic(historic) {
+    console.log(`Running E-Compare historic mode with ${historic} commits`);
+    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+
+    const octokit = retrieveOctokit();
+
+    const commits = await octokit.rest.repos.listCommits({
+        owner: owner,
+        repo: repo,
+        per_page: historic + 1,
+    });
+    const branch_name = 'energy-' + commits.data[9].commit.author.date.substring(0, 19).replaceAll(':', '-').replaceAll('T', '-');
+    const result = await createBranch(octokit, branch_name, commits.data[9].sha);
+    /*
+    for (let i = 1; i < commits.data.length; i++) {
+
+        const commit = commits.data[i];
+
+        console.log(`commit: ${commit.sha}`);
+        const branch_name = 'energy-' + commit.commit.author.date.substring(0, 19).replaceAll(':', '-').replaceAll('T', '-');
+
+        try {
+
+            // Create a new branch with the commit as the base
+            const result = await createBranch(octokit, branch_name, commit.sha);
+            if (result === 'exists') {
+                continue;
+            }
+
+            // Create an empty commit
+            const {data: new_commit} = await octokit.rest.git.createCommit({
+                owner,
+                repo,
+                message: 'Empty commit',
+                tree: commit.commit.tree.sha,  // The tree parameter can be the same as the SHA of the commit
+                parents: [commit.sha]
+            });
+
+            // // Update the branch reference to point to the new commit
+            // await octokit.rest.git.updateRef({
+            //     owner,
+            //     repo,
+            //     ref: `heads/${branch_name}`,
+            //     sha: new_commit.sha,
+            //     force: true
+            // });
+
+        } catch (error) {
+            console.error(error);
+            core.setFailed(error.message);
+            return Promise.reject();
+        }
+
+        try {
+            //Create pull request
+            await octokit.rest.pulls.create({
+                owner,
+                repo,
+                title: 'Energy measurement',
+                head: branch_name,
+                base: 'main'
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        // Delete the branch
+        // await octokit.rest.git.deleteRef({
+        //     owner,
+        //     repo,
+        //     ref: `heads/${branch_name}`,
+        // });
+    }
+
+
+*/
+
+    return Promise.resolve();
+}
+
 async function run() {
+    const historic = core.getInput('historic');
+    if (historic !== undefined && historic !== null && historic !== '') {
+        await run_historic(historic);
+    }
     if (process.env.GITHUB_EVENT_NAME === 'push') {
         await run_push();
     } else if (process.env.GITHUB_EVENT_NAME === 'pull_request') {

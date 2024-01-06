@@ -2,12 +2,6 @@ name: run-energy-measurer
 
 on:
   push:
-    paths-ignore:
-      - README.md
-      - CHANGELOG.md
-      - .gitignore
-      - .github/**
-      - .energy/**
   pull_request:
     types:
       - opened
@@ -28,4 +22,5 @@ jobs:
         with:
           run: sleep 10
           count: 5
+          historic: 10
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
