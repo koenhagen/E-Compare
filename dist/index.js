@@ -1,7 +1,7 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 3703:
+/***/ 5773:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const { execSync } = __nccwpck_require__(2081);
@@ -28,6 +28,577 @@ const run = function run(modelData) {
 };
 
 module.exports.run = run;
+
+/***/ }),
+
+/***/ 8621:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+"use strict";
+// ESM COMPAT FLAG
+__nccwpck_require__.r(__webpack_exports__);
+
+// EXPORTS
+__nccwpck_require__.d(__webpack_exports__, {
+  "commitReport": () => (/* binding */ commitReport),
+  "createBranch": () => (/* binding */ createBranch),
+  "createComment": () => (/* binding */ createComment),
+  "getForkPoint": () => (/* binding */ getForkPoint),
+  "getMeasurementsFromRepo": () => (/* binding */ getMeasurementsFromRepo),
+  "getPullRequest": () => (/* binding */ getPullRequest),
+  "retrieveOctokit": () => (/* binding */ retrieveOctokit)
+});
+
+;// CONCATENATED MODULE: ./node_modules/js-base64/base64.mjs
+/**
+ *  base64.ts
+ *
+ *  Licensed under the BSD 3-Clause License.
+ *    http://opensource.org/licenses/BSD-3-Clause
+ *
+ *  References:
+ *    http://en.wikipedia.org/wiki/Base64
+ *
+ * @author Dan Kogai (https://github.com/dankogai)
+ */
+const version = '3.7.5';
+/**
+ * @deprecated use lowercase `version`.
+ */
+const VERSION = version;
+const _hasatob = typeof atob === 'function';
+const _hasbtoa = typeof btoa === 'function';
+const _hasBuffer = typeof Buffer === 'function';
+const _TD = typeof TextDecoder === 'function' ? new TextDecoder() : undefined;
+const _TE = typeof TextEncoder === 'function' ? new TextEncoder() : undefined;
+const b64ch = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+const b64chs = Array.prototype.slice.call(b64ch);
+const b64tab = ((a) => {
+    let tab = {};
+    a.forEach((c, i) => tab[c] = i);
+    return tab;
+})(b64chs);
+const b64re = /^(?:[A-Za-z\d+\/]{4})*?(?:[A-Za-z\d+\/]{2}(?:==)?|[A-Za-z\d+\/]{3}=?)?$/;
+const _fromCC = String.fromCharCode.bind(String);
+const _U8Afrom = typeof Uint8Array.from === 'function'
+    ? Uint8Array.from.bind(Uint8Array)
+    : (it) => new Uint8Array(Array.prototype.slice.call(it, 0));
+const _mkUriSafe = (src) => src
+    .replace(/=/g, '').replace(/[+\/]/g, (m0) => m0 == '+' ? '-' : '_');
+const _tidyB64 = (s) => s.replace(/[^A-Za-z0-9\+\/]/g, '');
+/**
+ * polyfill version of `btoa`
+ */
+const btoaPolyfill = (bin) => {
+    // console.log('polyfilled');
+    let u32, c0, c1, c2, asc = '';
+    const pad = bin.length % 3;
+    for (let i = 0; i < bin.length;) {
+        if ((c0 = bin.charCodeAt(i++)) > 255 ||
+            (c1 = bin.charCodeAt(i++)) > 255 ||
+            (c2 = bin.charCodeAt(i++)) > 255)
+            throw new TypeError('invalid character found');
+        u32 = (c0 << 16) | (c1 << 8) | c2;
+        asc += b64chs[u32 >> 18 & 63]
+            + b64chs[u32 >> 12 & 63]
+            + b64chs[u32 >> 6 & 63]
+            + b64chs[u32 & 63];
+    }
+    return pad ? asc.slice(0, pad - 3) + "===".substring(pad) : asc;
+};
+/**
+ * does what `window.btoa` of web browsers do.
+ * @param {String} bin binary string
+ * @returns {string} Base64-encoded string
+ */
+const _btoa = _hasbtoa ? (bin) => btoa(bin)
+    : _hasBuffer ? (bin) => Buffer.from(bin, 'binary').toString('base64')
+        : btoaPolyfill;
+const _fromUint8Array = _hasBuffer
+    ? (u8a) => Buffer.from(u8a).toString('base64')
+    : (u8a) => {
+        // cf. https://stackoverflow.com/questions/12710001/how-to-convert-uint8-array-to-base64-encoded-string/12713326#12713326
+        const maxargs = 0x1000;
+        let strs = [];
+        for (let i = 0, l = u8a.length; i < l; i += maxargs) {
+            strs.push(_fromCC.apply(null, u8a.subarray(i, i + maxargs)));
+        }
+        return _btoa(strs.join(''));
+    };
+/**
+ * converts a Uint8Array to a Base64 string.
+ * @param {boolean} [urlsafe] URL-and-filename-safe a la RFC4648 §5
+ * @returns {string} Base64 string
+ */
+const fromUint8Array = (u8a, urlsafe = false) => urlsafe ? _mkUriSafe(_fromUint8Array(u8a)) : _fromUint8Array(u8a);
+// This trick is found broken https://github.com/dankogai/js-base64/issues/130
+// const utob = (src: string) => unescape(encodeURIComponent(src));
+// reverting good old fationed regexp
+const cb_utob = (c) => {
+    if (c.length < 2) {
+        var cc = c.charCodeAt(0);
+        return cc < 0x80 ? c
+            : cc < 0x800 ? (_fromCC(0xc0 | (cc >>> 6))
+                + _fromCC(0x80 | (cc & 0x3f)))
+                : (_fromCC(0xe0 | ((cc >>> 12) & 0x0f))
+                    + _fromCC(0x80 | ((cc >>> 6) & 0x3f))
+                    + _fromCC(0x80 | (cc & 0x3f)));
+    }
+    else {
+        var cc = 0x10000
+            + (c.charCodeAt(0) - 0xD800) * 0x400
+            + (c.charCodeAt(1) - 0xDC00);
+        return (_fromCC(0xf0 | ((cc >>> 18) & 0x07))
+            + _fromCC(0x80 | ((cc >>> 12) & 0x3f))
+            + _fromCC(0x80 | ((cc >>> 6) & 0x3f))
+            + _fromCC(0x80 | (cc & 0x3f)));
+    }
+};
+const re_utob = /[\uD800-\uDBFF][\uDC00-\uDFFFF]|[^\x00-\x7F]/g;
+/**
+ * @deprecated should have been internal use only.
+ * @param {string} src UTF-8 string
+ * @returns {string} UTF-16 string
+ */
+const utob = (u) => u.replace(re_utob, cb_utob);
+//
+const _encode = _hasBuffer
+    ? (s) => Buffer.from(s, 'utf8').toString('base64')
+    : _TE
+        ? (s) => _fromUint8Array(_TE.encode(s))
+        : (s) => _btoa(utob(s));
+/**
+ * converts a UTF-8-encoded string to a Base64 string.
+ * @param {boolean} [urlsafe] if `true` make the result URL-safe
+ * @returns {string} Base64 string
+ */
+const encode = (src, urlsafe = false) => urlsafe
+    ? _mkUriSafe(_encode(src))
+    : _encode(src);
+/**
+ * converts a UTF-8-encoded string to URL-safe Base64 RFC4648 §5.
+ * @returns {string} Base64 string
+ */
+const base64_encodeURI = (src) => encode(src, true);
+// This trick is found broken https://github.com/dankogai/js-base64/issues/130
+// const btou = (src: string) => decodeURIComponent(escape(src));
+// reverting good old fationed regexp
+const re_btou = /[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3}/g;
+const cb_btou = (cccc) => {
+    switch (cccc.length) {
+        case 4:
+            var cp = ((0x07 & cccc.charCodeAt(0)) << 18)
+                | ((0x3f & cccc.charCodeAt(1)) << 12)
+                | ((0x3f & cccc.charCodeAt(2)) << 6)
+                | (0x3f & cccc.charCodeAt(3)), offset = cp - 0x10000;
+            return (_fromCC((offset >>> 10) + 0xD800)
+                + _fromCC((offset & 0x3FF) + 0xDC00));
+        case 3:
+            return _fromCC(((0x0f & cccc.charCodeAt(0)) << 12)
+                | ((0x3f & cccc.charCodeAt(1)) << 6)
+                | (0x3f & cccc.charCodeAt(2)));
+        default:
+            return _fromCC(((0x1f & cccc.charCodeAt(0)) << 6)
+                | (0x3f & cccc.charCodeAt(1)));
+    }
+};
+/**
+ * @deprecated should have been internal use only.
+ * @param {string} src UTF-16 string
+ * @returns {string} UTF-8 string
+ */
+const btou = (b) => b.replace(re_btou, cb_btou);
+/**
+ * polyfill version of `atob`
+ */
+const atobPolyfill = (asc) => {
+    // console.log('polyfilled');
+    asc = asc.replace(/\s+/g, '');
+    if (!b64re.test(asc))
+        throw new TypeError('malformed base64.');
+    asc += '=='.slice(2 - (asc.length & 3));
+    let u24, bin = '', r1, r2;
+    for (let i = 0; i < asc.length;) {
+        u24 = b64tab[asc.charAt(i++)] << 18
+            | b64tab[asc.charAt(i++)] << 12
+            | (r1 = b64tab[asc.charAt(i++)]) << 6
+            | (r2 = b64tab[asc.charAt(i++)]);
+        bin += r1 === 64 ? _fromCC(u24 >> 16 & 255)
+            : r2 === 64 ? _fromCC(u24 >> 16 & 255, u24 >> 8 & 255)
+                : _fromCC(u24 >> 16 & 255, u24 >> 8 & 255, u24 & 255);
+    }
+    return bin;
+};
+/**
+ * does what `window.atob` of web browsers do.
+ * @param {String} asc Base64-encoded string
+ * @returns {string} binary string
+ */
+const _atob = _hasatob ? (asc) => atob(_tidyB64(asc))
+    : _hasBuffer ? (asc) => Buffer.from(asc, 'base64').toString('binary')
+        : atobPolyfill;
+//
+const _toUint8Array = _hasBuffer
+    ? (a) => _U8Afrom(Buffer.from(a, 'base64'))
+    : (a) => _U8Afrom(_atob(a).split('').map(c => c.charCodeAt(0)));
+/**
+ * converts a Base64 string to a Uint8Array.
+ */
+const toUint8Array = (a) => _toUint8Array(_unURI(a));
+//
+const _decode = _hasBuffer
+    ? (a) => Buffer.from(a, 'base64').toString('utf8')
+    : _TD
+        ? (a) => _TD.decode(_toUint8Array(a))
+        : (a) => btou(_atob(a));
+const _unURI = (a) => _tidyB64(a.replace(/[-_]/g, (m0) => m0 == '-' ? '+' : '/'));
+/**
+ * converts a Base64 string to a UTF-8 string.
+ * @param {String} src Base64 string.  Both normal and URL-safe are supported
+ * @returns {string} UTF-8 string
+ */
+const decode = (src) => _decode(_unURI(src));
+/**
+ * check if a value is a valid Base64 string
+ * @param {String} src a value to check
+  */
+const isValid = (src) => {
+    if (typeof src !== 'string')
+        return false;
+    const s = src.replace(/\s+/g, '').replace(/={0,2}$/, '');
+    return !/[^\s0-9a-zA-Z\+/]/.test(s) || !/[^\s0-9a-zA-Z\-_]/.test(s);
+};
+//
+const _noEnum = (v) => {
+    return {
+        value: v, enumerable: false, writable: true, configurable: true
+    };
+};
+/**
+ * extend String.prototype with relevant methods
+ */
+const extendString = function () {
+    const _add = (name, body) => Object.defineProperty(String.prototype, name, _noEnum(body));
+    _add('fromBase64', function () { return decode(this); });
+    _add('toBase64', function (urlsafe) { return encode(this, urlsafe); });
+    _add('toBase64URI', function () { return encode(this, true); });
+    _add('toBase64URL', function () { return encode(this, true); });
+    _add('toUint8Array', function () { return toUint8Array(this); });
+};
+/**
+ * extend Uint8Array.prototype with relevant methods
+ */
+const extendUint8Array = function () {
+    const _add = (name, body) => Object.defineProperty(Uint8Array.prototype, name, _noEnum(body));
+    _add('toBase64', function (urlsafe) { return fromUint8Array(this, urlsafe); });
+    _add('toBase64URI', function () { return fromUint8Array(this, true); });
+    _add('toBase64URL', function () { return fromUint8Array(this, true); });
+};
+/**
+ * extend Builtin prototypes with relevant methods
+ */
+const extendBuiltins = () => {
+    extendString();
+    extendUint8Array();
+};
+const gBase64 = {
+    version: version,
+    VERSION: VERSION,
+    atob: _atob,
+    atobPolyfill: atobPolyfill,
+    btoa: _btoa,
+    btoaPolyfill: btoaPolyfill,
+    fromBase64: decode,
+    toBase64: encode,
+    encode: encode,
+    encodeURI: base64_encodeURI,
+    encodeURL: base64_encodeURI,
+    utob: utob,
+    btou: btou,
+    decode: decode,
+    isValid: isValid,
+    fromUint8Array: fromUint8Array,
+    toUint8Array: toUint8Array,
+    extendString: extendString,
+    extendUint8Array: extendUint8Array,
+    extendBuiltins: extendBuiltins,
+};
+// makecjs:CUT //
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// and finally,
+
+
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __nccwpck_require__(1013);
+var core_default = /*#__PURE__*/__nccwpck_require__.n(core);
+;// CONCATENATED MODULE: ./functions/GitHub.js
+
+
+
+const github = __nccwpck_require__(3922);
+
+function retrieveOctokit() {
+    const github_token = core_default().getInput('GITHUB_TOKEN');
+    if (!github_token) {
+        console.error('Error: No GitHub secrets access');
+        core_default().setFailed('No GitHub secrets access');
+        throw new Error('No GitHub secrets access'); // Throw an error if the GitHub token couldn't be retrieved
+    }
+    return github.getOctokit(github_token); // Return the Octokit instance if the operation was successful
+}
+
+async function createBranch(octokit, branch, sha) {
+    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+    try {
+        // Check if branch exists
+        await octokit.rest.git.getRef({
+            owner: owner,
+            repo: repo,
+            ref: `/heads/${branch}`,
+        });
+        return 'exists';
+    } catch (error) {
+        console.log(`Branch ${branch} does not exist. Creating new branch.`);
+    }
+
+    try {
+        // Create branch
+        await octokit.rest.git.createRef({
+            owner: owner,
+            repo: repo,
+            ref: `refs/heads/${branch}`,
+            sha: sha,
+        });
+        return 'success';
+    } catch (error) {
+        console.error(`Error while creating branch: ${error}`);
+        return 'failed';
+    }
+}
+
+async function commitReport(octokit, content) {
+    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+    const path = `.energy/${github.context.payload.head_commit.id}.json`;
+    const message = "Add power report";
+    await createBranch(octokit, 'energy', github.context.sha);
+    try {
+        await octokit.rest.repos.createOrUpdateFileContents({
+            owner: owner,
+            repo: repo,
+            path: path,
+            message: message,
+            content: gBase64.encode(JSON.stringify(content)),
+            branch: 'energy',
+        });
+    } catch (error) {
+        console.error(`Error while creating report: ${error}`);
+    }
+}
+
+async function getPullRequest(octokit, sha) {
+    try {
+        const result = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            commit_sha: sha
+        });
+        const pull_request = result.data.filter(({state}) => state === 'open');
+        if (pull_request.length === 0) {
+            return null;
+        }
+        return pull_request[0];
+    } catch (error) {
+        console.error(`No pull request associated with push`);
+        return null;
+    }
+}
+
+async function getForkPoint(pull_request, octokit) {
+    try {
+        const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+        const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+        console.log(`base: ${pull_request.base.ref}`);
+        console.log(`head: ${pull_request.base}`);
+        console.log(`head: ${pull_request}`);
+        const basehead = `${pull_request.base.ref}...${pull_request.head.ref}`
+
+        const response = await octokit.request(`GET /repos/{owner}/{repo}/compare/{basehead}`, {
+            owner: owner,
+            repo: repo,
+            basehead: basehead,
+            headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
+            }
+        });
+        // if (response.data.base_commit.commit.message === 'Add power report') {
+        //     return response.data.merge_base_commit.parents[0].sha;
+        // }
+
+        // pull_request.head.parents.map((parent) => {
+        //     console.log(parent.sha);
+        // });
+        return response.data.merge_base_commit.sha;
+    } catch (error) {
+        console.error(`Could not find fork point: ${error}`);
+        return null;
+    }
+}
+async function getMeasurementsFromRepo(octokit, sha) {
+    try {
+        const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+        const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+        const path = `.energy/${sha}.json`;
+        const ref = `energy`;
+
+        const result = await octokit.rest.repos.getContent({
+            owner,
+            repo,
+            path,
+            ref,
+        });
+        const content = Buffer.from(result.data['content'], 'base64').toString()
+        return JSON.parse(content);
+    } catch (error) {
+        return null;
+    }
+}
+async function createComment(octokit, data, difference, pull_request) {
+    const issueNumber = pull_request.number;
+    let body = `⚡ The total energy is: ${Math.round((data['total_energy'] + Number.EPSILON) * 100) / 100}\n💪 The power is: ${Math.round((data['power_avg'] + Number.EPSILON) * 100) / 100}\n🕒 The duration is: ${data['duration']}`;
+    if (difference !== null) {
+        if (difference >= -0.5 && difference <= 0.5) {
+            body += '\n\nNo significant difference has been found compared to the base branch.';
+        } else if (difference > 0.5) {
+            body += `\n\n<span style="color:red">${Math.round((difference * 100) + Number.EPSILON)}%</span> lower than the base branch`;
+        } else {
+            body += `\n\n<span style="color : green">${Math.round((difference * 100) + Number.EPSILON)}%</span> higher than the base branch`;
+        }
+    }
+
+    try {
+        await octokit.rest.issues.createComment({
+            ...github.context.repo,
+            issue_number: issueNumber,
+            body: body,
+        });
+    } catch (error) {
+        console.error(`Could not create comment: ${error}`);
+    }
+}
+
+/***/ }),
+
+/***/ 2127:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+"use strict";
+__nccwpck_require__.r(__webpack_exports__);
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "run_historic": () => (/* binding */ run_historic)
+/* harmony export */ });
+const {retrieveOctokit, createBranch} = __nccwpck_require__(8621);
+const core = __nccwpck_require__(1013);
+
+async function run_historic(historic) {
+    console.log(`Running E-Compare historic mode with ${historic} commits`);
+    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+
+    const octokit = retrieveOctokit();
+
+    console.log(historic);
+    console.log(historic + 1);
+    console.log(Number(historic) + 1);
+    const commits = await octokit.rest.repos.listCommits({
+        owner: owner,
+        repo: repo,
+        page: 1,
+        per_page: Number(historic) + 1,
+    });
+    console.log(`commit length: ${commits.data.length}`)
+    for (let i = 1; i < commits.data.length; i++) {
+
+        const commit = commits.data[i];
+
+        console.log(`commit: ${commit.sha}`);
+        const branch_name = 'energy-' + commit.commit.author.date.substring(0, 19).replaceAll(':', '-').replaceAll('T', '-');
+
+        try {
+
+            // Create a new branch with the commit as the base
+            await createBranch(octokit, branch_name, commit.sha);
+
+            // if (result === 'exists') {
+            //     continue;
+            // }
+
+            // // Create an empty commit
+            // const {data: new_commit} = await octokit.rest.git.createCommit({
+            //     owner,
+            //     repo,
+            //     message: 'Empty commit',
+            //     tree: commit.commit.tree.sha,  // The tree parameter can be the same as the SHA of the commit
+            //     parents: [commit.sha]
+            // });
+
+            // // Update the branch reference to point to the new commit
+            // await octokit.rest.git.updateRef({
+            //     owner,
+            //     repo,
+            //     ref: `heads/${branch_name}`,
+            //     sha: new_commit.sha,
+            //     force: true
+            // });
+
+        } catch (error) {
+            console.error(error);
+            core.setFailed(error.message);
+            return Promise.reject();
+        }
+
+        // try {
+        //     //Create pull request
+        //     await octokit.rest.pulls.create({
+        //         owner,
+        //         repo,
+        //         title: 'Energy measurement',
+        //         head: branch_name,
+        //         base: 'main'
+        //     });
+        // } catch (error) {
+        //     console.error(error);
+        // }
+
+        // Delete the branch
+        // await octokit.rest.git.deleteRef({
+        //     owner,
+        //     repo,
+        //     ref: `heads/${branch_name}`,
+        // });
+    }
+    return Promise.resolve();
+}
 
 /***/ }),
 
@@ -4757,314 +5328,6 @@ function isPlainObject(o) {
 }
 
 exports.isPlainObject = isPlainObject;
-
-
-/***/ }),
-
-/***/ 3439:
-/***/ (function(module) {
-
-//
-// THIS FILE IS AUTOMATICALLY GENERATED! DO NOT EDIT BY HAND!
-//
-;
-(function (global, factory) {
-     true
-        ? module.exports = factory()
-        : 0;
-}((typeof self !== 'undefined' ? self
-    : typeof window !== 'undefined' ? window
-        : typeof global !== 'undefined' ? global
-            : this), function () {
-    'use strict';
-    /**
-     *  base64.ts
-     *
-     *  Licensed under the BSD 3-Clause License.
-     *    http://opensource.org/licenses/BSD-3-Clause
-     *
-     *  References:
-     *    http://en.wikipedia.org/wiki/Base64
-     *
-     * @author Dan Kogai (https://github.com/dankogai)
-     */
-    var version = '3.7.5';
-    /**
-     * @deprecated use lowercase `version`.
-     */
-    var VERSION = version;
-    var _hasatob = typeof atob === 'function';
-    var _hasbtoa = typeof btoa === 'function';
-    var _hasBuffer = typeof Buffer === 'function';
-    var _TD = typeof TextDecoder === 'function' ? new TextDecoder() : undefined;
-    var _TE = typeof TextEncoder === 'function' ? new TextEncoder() : undefined;
-    var b64ch = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-    var b64chs = Array.prototype.slice.call(b64ch);
-    var b64tab = (function (a) {
-        var tab = {};
-        a.forEach(function (c, i) { return tab[c] = i; });
-        return tab;
-    })(b64chs);
-    var b64re = /^(?:[A-Za-z\d+\/]{4})*?(?:[A-Za-z\d+\/]{2}(?:==)?|[A-Za-z\d+\/]{3}=?)?$/;
-    var _fromCC = String.fromCharCode.bind(String);
-    var _U8Afrom = typeof Uint8Array.from === 'function'
-        ? Uint8Array.from.bind(Uint8Array)
-        : function (it) { return new Uint8Array(Array.prototype.slice.call(it, 0)); };
-    var _mkUriSafe = function (src) { return src
-        .replace(/=/g, '').replace(/[+\/]/g, function (m0) { return m0 == '+' ? '-' : '_'; }); };
-    var _tidyB64 = function (s) { return s.replace(/[^A-Za-z0-9\+\/]/g, ''); };
-    /**
-     * polyfill version of `btoa`
-     */
-    var btoaPolyfill = function (bin) {
-        // console.log('polyfilled');
-        var u32, c0, c1, c2, asc = '';
-        var pad = bin.length % 3;
-        for (var i = 0; i < bin.length;) {
-            if ((c0 = bin.charCodeAt(i++)) > 255 ||
-                (c1 = bin.charCodeAt(i++)) > 255 ||
-                (c2 = bin.charCodeAt(i++)) > 255)
-                throw new TypeError('invalid character found');
-            u32 = (c0 << 16) | (c1 << 8) | c2;
-            asc += b64chs[u32 >> 18 & 63]
-                + b64chs[u32 >> 12 & 63]
-                + b64chs[u32 >> 6 & 63]
-                + b64chs[u32 & 63];
-        }
-        return pad ? asc.slice(0, pad - 3) + "===".substring(pad) : asc;
-    };
-    /**
-     * does what `window.btoa` of web browsers do.
-     * @param {String} bin binary string
-     * @returns {string} Base64-encoded string
-     */
-    var _btoa = _hasbtoa ? function (bin) { return btoa(bin); }
-        : _hasBuffer ? function (bin) { return Buffer.from(bin, 'binary').toString('base64'); }
-            : btoaPolyfill;
-    var _fromUint8Array = _hasBuffer
-        ? function (u8a) { return Buffer.from(u8a).toString('base64'); }
-        : function (u8a) {
-            // cf. https://stackoverflow.com/questions/12710001/how-to-convert-uint8-array-to-base64-encoded-string/12713326#12713326
-            var maxargs = 0x1000;
-            var strs = [];
-            for (var i = 0, l = u8a.length; i < l; i += maxargs) {
-                strs.push(_fromCC.apply(null, u8a.subarray(i, i + maxargs)));
-            }
-            return _btoa(strs.join(''));
-        };
-    /**
-     * converts a Uint8Array to a Base64 string.
-     * @param {boolean} [urlsafe] URL-and-filename-safe a la RFC4648 §5
-     * @returns {string} Base64 string
-     */
-    var fromUint8Array = function (u8a, urlsafe) {
-        if (urlsafe === void 0) { urlsafe = false; }
-        return urlsafe ? _mkUriSafe(_fromUint8Array(u8a)) : _fromUint8Array(u8a);
-    };
-    // This trick is found broken https://github.com/dankogai/js-base64/issues/130
-    // const utob = (src: string) => unescape(encodeURIComponent(src));
-    // reverting good old fationed regexp
-    var cb_utob = function (c) {
-        if (c.length < 2) {
-            var cc = c.charCodeAt(0);
-            return cc < 0x80 ? c
-                : cc < 0x800 ? (_fromCC(0xc0 | (cc >>> 6))
-                    + _fromCC(0x80 | (cc & 0x3f)))
-                    : (_fromCC(0xe0 | ((cc >>> 12) & 0x0f))
-                        + _fromCC(0x80 | ((cc >>> 6) & 0x3f))
-                        + _fromCC(0x80 | (cc & 0x3f)));
-        }
-        else {
-            var cc = 0x10000
-                + (c.charCodeAt(0) - 0xD800) * 0x400
-                + (c.charCodeAt(1) - 0xDC00);
-            return (_fromCC(0xf0 | ((cc >>> 18) & 0x07))
-                + _fromCC(0x80 | ((cc >>> 12) & 0x3f))
-                + _fromCC(0x80 | ((cc >>> 6) & 0x3f))
-                + _fromCC(0x80 | (cc & 0x3f)));
-        }
-    };
-    var re_utob = /[\uD800-\uDBFF][\uDC00-\uDFFFF]|[^\x00-\x7F]/g;
-    /**
-     * @deprecated should have been internal use only.
-     * @param {string} src UTF-8 string
-     * @returns {string} UTF-16 string
-     */
-    var utob = function (u) { return u.replace(re_utob, cb_utob); };
-    //
-    var _encode = _hasBuffer
-        ? function (s) { return Buffer.from(s, 'utf8').toString('base64'); }
-        : _TE
-            ? function (s) { return _fromUint8Array(_TE.encode(s)); }
-            : function (s) { return _btoa(utob(s)); };
-    /**
-     * converts a UTF-8-encoded string to a Base64 string.
-     * @param {boolean} [urlsafe] if `true` make the result URL-safe
-     * @returns {string} Base64 string
-     */
-    var encode = function (src, urlsafe) {
-        if (urlsafe === void 0) { urlsafe = false; }
-        return urlsafe
-            ? _mkUriSafe(_encode(src))
-            : _encode(src);
-    };
-    /**
-     * converts a UTF-8-encoded string to URL-safe Base64 RFC4648 §5.
-     * @returns {string} Base64 string
-     */
-    var encodeURI = function (src) { return encode(src, true); };
-    // This trick is found broken https://github.com/dankogai/js-base64/issues/130
-    // const btou = (src: string) => decodeURIComponent(escape(src));
-    // reverting good old fationed regexp
-    var re_btou = /[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3}/g;
-    var cb_btou = function (cccc) {
-        switch (cccc.length) {
-            case 4:
-                var cp = ((0x07 & cccc.charCodeAt(0)) << 18)
-                    | ((0x3f & cccc.charCodeAt(1)) << 12)
-                    | ((0x3f & cccc.charCodeAt(2)) << 6)
-                    | (0x3f & cccc.charCodeAt(3)), offset = cp - 0x10000;
-                return (_fromCC((offset >>> 10) + 0xD800)
-                    + _fromCC((offset & 0x3FF) + 0xDC00));
-            case 3:
-                return _fromCC(((0x0f & cccc.charCodeAt(0)) << 12)
-                    | ((0x3f & cccc.charCodeAt(1)) << 6)
-                    | (0x3f & cccc.charCodeAt(2)));
-            default:
-                return _fromCC(((0x1f & cccc.charCodeAt(0)) << 6)
-                    | (0x3f & cccc.charCodeAt(1)));
-        }
-    };
-    /**
-     * @deprecated should have been internal use only.
-     * @param {string} src UTF-16 string
-     * @returns {string} UTF-8 string
-     */
-    var btou = function (b) { return b.replace(re_btou, cb_btou); };
-    /**
-     * polyfill version of `atob`
-     */
-    var atobPolyfill = function (asc) {
-        // console.log('polyfilled');
-        asc = asc.replace(/\s+/g, '');
-        if (!b64re.test(asc))
-            throw new TypeError('malformed base64.');
-        asc += '=='.slice(2 - (asc.length & 3));
-        var u24, bin = '', r1, r2;
-        for (var i = 0; i < asc.length;) {
-            u24 = b64tab[asc.charAt(i++)] << 18
-                | b64tab[asc.charAt(i++)] << 12
-                | (r1 = b64tab[asc.charAt(i++)]) << 6
-                | (r2 = b64tab[asc.charAt(i++)]);
-            bin += r1 === 64 ? _fromCC(u24 >> 16 & 255)
-                : r2 === 64 ? _fromCC(u24 >> 16 & 255, u24 >> 8 & 255)
-                    : _fromCC(u24 >> 16 & 255, u24 >> 8 & 255, u24 & 255);
-        }
-        return bin;
-    };
-    /**
-     * does what `window.atob` of web browsers do.
-     * @param {String} asc Base64-encoded string
-     * @returns {string} binary string
-     */
-    var _atob = _hasatob ? function (asc) { return atob(_tidyB64(asc)); }
-        : _hasBuffer ? function (asc) { return Buffer.from(asc, 'base64').toString('binary'); }
-            : atobPolyfill;
-    //
-    var _toUint8Array = _hasBuffer
-        ? function (a) { return _U8Afrom(Buffer.from(a, 'base64')); }
-        : function (a) { return _U8Afrom(_atob(a).split('').map(function (c) { return c.charCodeAt(0); })); };
-    /**
-     * converts a Base64 string to a Uint8Array.
-     */
-    var toUint8Array = function (a) { return _toUint8Array(_unURI(a)); };
-    //
-    var _decode = _hasBuffer
-        ? function (a) { return Buffer.from(a, 'base64').toString('utf8'); }
-        : _TD
-            ? function (a) { return _TD.decode(_toUint8Array(a)); }
-            : function (a) { return btou(_atob(a)); };
-    var _unURI = function (a) { return _tidyB64(a.replace(/[-_]/g, function (m0) { return m0 == '-' ? '+' : '/'; })); };
-    /**
-     * converts a Base64 string to a UTF-8 string.
-     * @param {String} src Base64 string.  Both normal and URL-safe are supported
-     * @returns {string} UTF-8 string
-     */
-    var decode = function (src) { return _decode(_unURI(src)); };
-    /**
-     * check if a value is a valid Base64 string
-     * @param {String} src a value to check
-      */
-    var isValid = function (src) {
-        if (typeof src !== 'string')
-            return false;
-        var s = src.replace(/\s+/g, '').replace(/={0,2}$/, '');
-        return !/[^\s0-9a-zA-Z\+/]/.test(s) || !/[^\s0-9a-zA-Z\-_]/.test(s);
-    };
-    //
-    var _noEnum = function (v) {
-        return {
-            value: v, enumerable: false, writable: true, configurable: true
-        };
-    };
-    /**
-     * extend String.prototype with relevant methods
-     */
-    var extendString = function () {
-        var _add = function (name, body) { return Object.defineProperty(String.prototype, name, _noEnum(body)); };
-        _add('fromBase64', function () { return decode(this); });
-        _add('toBase64', function (urlsafe) { return encode(this, urlsafe); });
-        _add('toBase64URI', function () { return encode(this, true); });
-        _add('toBase64URL', function () { return encode(this, true); });
-        _add('toUint8Array', function () { return toUint8Array(this); });
-    };
-    /**
-     * extend Uint8Array.prototype with relevant methods
-     */
-    var extendUint8Array = function () {
-        var _add = function (name, body) { return Object.defineProperty(Uint8Array.prototype, name, _noEnum(body)); };
-        _add('toBase64', function (urlsafe) { return fromUint8Array(this, urlsafe); });
-        _add('toBase64URI', function () { return fromUint8Array(this, true); });
-        _add('toBase64URL', function () { return fromUint8Array(this, true); });
-    };
-    /**
-     * extend Builtin prototypes with relevant methods
-     */
-    var extendBuiltins = function () {
-        extendString();
-        extendUint8Array();
-    };
-    var gBase64 = {
-        version: version,
-        VERSION: VERSION,
-        atob: _atob,
-        atobPolyfill: atobPolyfill,
-        btoa: _btoa,
-        btoaPolyfill: btoaPolyfill,
-        fromBase64: decode,
-        toBase64: encode,
-        encode: encode,
-        encodeURI: encodeURI,
-        encodeURL: encodeURI,
-        utob: utob,
-        btou: btou,
-        decode: decode,
-        isValid: isValid,
-        fromUint8Array: fromUint8Array,
-        toUint8Array: toUint8Array,
-        extendString: extendString,
-        extendUint8Array: extendUint8Array,
-        extendBuiltins: extendBuiltins
-    };
-    //
-    // export Base64 to the namespace
-    //
-    // ES5 is yet to have Object.assign() that may make transpilers unhappy.
-    // gBase64.Base64 = Object.assign({}, gBase64);
-    gBase64.Base64 = {};
-    Object.keys(gBase64).forEach(function (k) { return gBase64.Base64[k] = gBase64[k]; });
-    return gBase64;
-}));
 
 
 /***/ }),
@@ -10273,6 +10536,18 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__nccwpck_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__nccwpck_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter functions for harmony exports
@@ -10290,6 +10565,17 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
 /******/ 	})();
 /******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__nccwpck_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
@@ -10300,13 +10586,16 @@ var __webpack_exports__ = {};
 (() => {
 const core = __nccwpck_require__(1013);
 const github = __nccwpck_require__(3922);
-const {Base64} = __nccwpck_require__(3439);
 const fs = __nccwpck_require__(7147);
 const util = __nccwpck_require__(3837);
 const os = __nccwpck_require__(2037);
 const exec = util.promisify((__nccwpck_require__(2081).exec));
 const setup = __nccwpck_require__(1963);
-const AI = __nccwpck_require__(3703);
+const AI = __nccwpck_require__(5773);
+const {
+    createComment, getMeasurementsFromRepo, getForkPoint, getPullRequest, commitReport, retrieveOctokit
+} = __nccwpck_require__(8621);
+const {run_historic} = __nccwpck_require__(2127);
 const models = (__nccwpck_require__(2502)/* .models */ .C);
 
 async function estimateEnergy() {
@@ -10330,7 +10619,6 @@ async function estimateEnergy() {
 
 async function measureCpuUsage() {
 
-
     const unitTest = core.getInput('run');
     console.log("Testing command: " + unitTest);
     const count = core.getInput('count');
@@ -10343,16 +10631,6 @@ async function measureCpuUsage() {
     await estimateEnergy()
 
     return Promise.resolve();
-}
-
-function retrieveOctokit() {
-    const github_token = core.getInput('GITHUB_TOKEN');
-    if (!github_token) {
-        console.error('Error: No GitHub secrets access');
-        core.setFailed('No GitHub secrets access');
-        throw new Error('No GitHub secrets access'); // Throw an error if the GitHub token couldn't be retrieved
-    }
-    return github.getOctokit(github_token); // Return the Octokit instance if the operation was successful
 }
 
 function readEnergyData() {
@@ -10375,149 +10653,6 @@ function readEnergyData() {
     } catch (error) {
         console.error(`Could not read data: ${error}`);
         return null;
-    }
-}
-
-async function createBranch(octokit, branch, sha) {
-    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
-    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-    try {
-        // Check if branch exists
-        await octokit.rest.git.getRef({
-            owner: owner,
-            repo: repo,
-            ref: `/heads/${branch}`,
-        });
-        return 'exists';
-    } catch (error) {
-        console.log(`Branch ${branch} does not exist. Creating new branch.`);
-    }
-
-    try {
-        // Create branch
-        await octokit.rest.git.createRef({
-            owner: owner,
-            repo: repo,
-            ref: `refs/heads/${branch}`,
-            sha: sha,
-        });
-        return 'success';
-    } catch (error) {
-        console.error(`Error while creating branch: ${error}`);
-        return 'failed';
-    }
-}
-
-async function commitReport(octokit, content) {
-    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
-    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-    const path = `.energy/${github.context.payload.head_commit.id}.json`;
-    const message = "Add power report";
-    await createBranch(octokit, 'energy', github.context.sha);
-    try {
-        await octokit.rest.repos.createOrUpdateFileContents({
-            owner: owner,
-            repo: repo,
-            path: path,
-            message: message,
-            content: Base64.encode(JSON.stringify(content)),
-            branch: 'energy',
-        });
-    } catch (error) {
-        console.error(`Error while creating report: ${error}`);
-    }
-}
-
-async function getPullRequest(octokit, sha) {
-    try {
-        const result = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            commit_sha: sha
-        });
-        const pull_request = result.data.filter(({state}) => state === 'open');
-        if (pull_request.length === 0) {
-            return null;
-        }
-        return pull_request[0];
-    } catch (error) {
-        console.error(`No pull request associated with push`);
-        return null;
-    }
-}
-
-async function getForkPoint(pull_request, octokit) {
-    try {
-        const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
-        const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-        console.log(`base: ${pull_request.base.ref}`);
-        console.log(`head: ${pull_request.base}`);
-        console.log(`head: ${pull_request}`);
-        const basehead = `${pull_request.base.ref}...${pull_request.head.ref}`
-
-        const response = await octokit.request(`GET /repos/{owner}/{repo}/compare/{basehead}`, {
-            owner: owner,
-            repo: repo,
-            basehead: basehead,
-            headers: {
-                'X-GitHub-Api-Version': '2022-11-28'
-            }
-        });
-        // if (response.data.base_commit.commit.message === 'Add power report') {
-        //     return response.data.merge_base_commit.parents[0].sha;
-        // }
-
-        // pull_request.head.parents.map((parent) => {
-        //     console.log(parent.sha);
-        // });
-        return response.data.merge_base_commit.sha;
-    } catch (error) {
-        console.error(`Could not find fork point: ${error}`);
-        return null;
-    }
-}
-
-async function getMeasurementsFromRepo(octokit, sha) {
-    try {
-        const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
-        const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-        const path = `.energy/${sha}.json`;
-        const ref = `energy`;
-
-        const result = await octokit.rest.repos.getContent({
-            owner,
-            repo,
-            path,
-            ref,
-        });
-        const content = Buffer.from(result.data['content'], 'base64').toString()
-        return JSON.parse(content);
-    } catch (error) {
-        return null;
-    }
-}
-
-async function createComment(octokit, data, difference, pull_request) {
-    const issueNumber = pull_request.number;
-    let body = `⚡ The total energy is: ${Math.round((data['total_energy'] + Number.EPSILON) * 100) / 100}\n💪 The power is: ${Math.round((data['power_avg'] + Number.EPSILON) * 100) / 100}\n🕒 The duration is: ${data['duration']}`;
-    if (difference !== null) {
-        if (difference >= -0.5 && difference <= 0.5) {
-            body += '\n\nNo significant difference has been found compared to the base branch.';
-        } else if (difference > 0.5) {
-            body += `\n\n<span style="color:red">${Math.round((difference * 100) + Number.EPSILON)}%</span> lower than the base branch`;
-        } else {
-            body += `\n\n<span style="color : green">${Math.round((difference * 100) + Number.EPSILON)}%</span> higher than the base branch`;
-        }
-    }
-
-    try {
-        await octokit.rest.issues.createComment({
-            ...github.context.repo,
-            issue_number: issueNumber,
-            body: body,
-        });
-    } catch (error) {
-        console.error(`Could not create comment: ${error}`);
     }
 }
 
@@ -10571,7 +10706,6 @@ async function run_push() {
         await commitReport(octokit, new_data);
 
         const pull_request = await getPullRequest(octokit, github.context.sha);
-
         if (pull_request === null) {
             return;
         }
@@ -10589,85 +10723,6 @@ async function run_push() {
         core.setFailed(error.message);
         return Promise.reject();
     }
-}
-
-async function run_historic(historic) {
-    console.log(`Running E-Compare historic mode with ${historic} commits`);
-    const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
-    const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
-
-    const octokit = retrieveOctokit();
-
-    console.log(historic);
-    console.log(historic + 1);
-    console.log(Number(historic) + 1);
-    const commits = await octokit.rest.repos.listCommits({
-        owner: owner,
-        repo: repo,
-        page: 1,
-        per_page: Number(historic) + 1,
-    });
-    console.log(`commit length: ${commits.data.length}`)
-    for (let i = 1; i < commits.data.length; i++) {
-
-        const commit = commits.data[i];
-
-        console.log(`commit: ${commit.sha}`);
-        const branch_name = 'energy-' + commit.commit.author.date.substring(0, 19).replaceAll(':', '-').replaceAll('T', '-');
-
-        try {
-
-            // Create a new branch with the commit as the base
-            const result = await createBranch(octokit, branch_name, commit.sha);
-            if (result === 'exists') {
-                continue;
-            }
-
-            // // Create an empty commit
-            // const {data: new_commit} = await octokit.rest.git.createCommit({
-            //     owner,
-            //     repo,
-            //     message: 'Empty commit',
-            //     tree: commit.commit.tree.sha,  // The tree parameter can be the same as the SHA of the commit
-            //     parents: [commit.sha]
-            // });
-
-            // // Update the branch reference to point to the new commit
-            // await octokit.rest.git.updateRef({
-            //     owner,
-            //     repo,
-            //     ref: `heads/${branch_name}`,
-            //     sha: new_commit.sha,
-            //     force: true
-            // });
-
-        } catch (error) {
-            console.error(error);
-            core.setFailed(error.message);
-            return Promise.reject();
-        }
-
-        // try {
-        //     //Create pull request
-        //     await octokit.rest.pulls.create({
-        //         owner,
-        //         repo,
-        //         title: 'Energy measurement',
-        //         head: branch_name,
-        //         base: 'main'
-        //     });
-        // } catch (error) {
-        //     console.error(error);
-        // }
-
-        // Delete the branch
-        // await octokit.rest.git.deleteRef({
-        //     owner,
-        //     repo,
-        //     ref: `heads/${branch_name}`,
-        // });
-    }
-    return Promise.resolve();
 }
 
 async function run() {
