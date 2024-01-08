@@ -49,6 +49,21 @@ export async function commitReport(octokit, content) {
     const path = `.energy/${github.context.payload.head_commit.id}.json`;
     const message = "Add power report";
     await createBranch(octokit, 'energy', github.context.sha);
+
+    // Check if file exists
+    let sha = null;
+    try {
+        const file = await octokit.rest.repos.getContent({
+            owner: owner,
+            repo: repo,
+            path: path,
+            ref: 'energy',
+        });
+        sha = file.data['sha'];
+    } catch (error) {
+        console.log(`File ${path} does not exist. Creating new file.`);
+    }
+
     try {
         await octokit.rest.repos.createOrUpdateFileContents({
             owner: owner,
@@ -57,6 +72,7 @@ export async function commitReport(octokit, content) {
             message: message,
             content: Base64.encode(JSON.stringify(content)),
             branch: 'energy',
+            sha: sha,
         });
     } catch (error) {
         console.error(`Error while creating report: ${error}`);
