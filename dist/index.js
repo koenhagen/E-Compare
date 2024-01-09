@@ -550,12 +550,11 @@ async function run_historic(historic) {
 
         const commit = commits.data[i];
 
-        console.log(`commit: ${commit.commit.tree.sha}`);
         const branch_name = 'energy-' + commit.commit.author.date.substring(0, 19).replaceAll(':', '-').replaceAll('T', '-');
 
         try {
             // Create a new branch with the commit as the base
-            await createBranch(octokit, branch_name, commit.commit.tree.sha);
+            await createBranch(octokit, branch_name, commit.sha);
 
             // if (result === 'exists') {
             //     continue;
