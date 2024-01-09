@@ -117,7 +117,7 @@ async function run_push() {
 
         const octokit = retrieveOctokit();
         const new_data = readEnergyData();
-        console.log(`Measured data: ${new_data}`);
+        console.log(`Measured data: ${new_data['total_energy']}`);
         await commitReport(octokit, new_data);
 
         const pull_request = await getPullRequest(octokit, github.context.sha);
