@@ -4,7 +4,7 @@
 /***/ 5773:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const { execSync } = __nccwpck_require__(2081);
+const {execSync} = __nccwpck_require__(2081);
 
 const run = function run(modelData) {
     try {
@@ -349,6 +349,7 @@ const gBase64 = {
 
 ;// CONCATENATED MODULE: ./functions/GitHub.js
 
+
 const core = __nccwpck_require__(1013);
 
 const github = __nccwpck_require__(3922);
@@ -477,6 +478,7 @@ async function getForkPoint(pull_request, octokit) {
         return null;
     }
 }
+
 async function getMeasurementsFromRepo(octokit, sha) {
     try {
         const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
@@ -496,6 +498,7 @@ async function getMeasurementsFromRepo(octokit, sha) {
         return null;
     }
 }
+
 async function createComment(octokit, data, difference, pull_request) {
     const issueNumber = pull_request.number;
     let body = `⚡ The total energy is: ${Math.round((data['total_energy'] + Number.EPSILON) * 100) / 100}\n💪 The power is: ${Math.round((data['power_avg'] + Number.EPSILON) * 100) / 100}\n🕒 The duration is: ${data['duration']}`;
@@ -617,90 +620,90 @@ async function run_historic(historic) {
 /* harmony export */   "C": () => (/* binding */ models)
 /* harmony export */ });
 const models = {
-  "8272CL": {
-    "MODEL_NAME": "8272CL",
-    "TDP": 195,
-    "CPU_THREADS": 52,
-    "CPU_CORES": 26,
-    "CPU_MAKE": "intel",
-    "RELEASE_YEAR": 2019,
-    "RAM": 182,
-    "CPU_FREQ": 2600,
-    "CPU_CHIPS": 1,
-    "VHOST_RATIO": 0.038461538461538464
-  },
-  "8370C": {
-    "MODEL_NAME": "8370C",
-    "TDP": 270,
-    "CPU_THREADS": 64,
-    "CPU_CORES": 32,
-    "CPU_MAKE": "intel",
-    "RELEASE_YEAR": 2021,
-    "RAM": 224,
-    "CPU_FREQ": 2800,
-    "CPU_CHIPS": 1,
-    "VHOST_RATIO": 0.03125
-  },
-  "E5-2673 v4": {
-    "MODEL_NAME": "E5-2673v4",
-    "TDP": 165,
-    "CPU_THREADS": 52,
-    "CPU_CORES": 26,
-    "CPU_MAKE": "intel",
-    "RELEASE_YEAR": 2018,
-    "RAM": 182,
-    "CPU_FREQ": 2300,
-    "CPU_CHIPS": 1,
-    "VHOST_RATIO": 0.038461538461538464
-  },
-  "E5-2673 v3": {
-    "MODEL_NAME": "E5-2673v3",
-    "TDP": 110,
-    "CPU_THREADS": 24,
-    "CPU_CORES": 12,
-    "CPU_MAKE": "intel",
-    "RELEASE_YEAR": 2015,
-    "RAM": 84,
-    "CPU_FREQ": 2400,
-    "CPU_CHIPS": 1,
-    "VHOST_RATIO": 0.08333333333333333
-  },
-  "8171M": {
-    "MODEL_NAME": "8171M",
-    "TDP": 165,
-    "CPU_THREADS": 52,
-    "CPU_CORES": 26,
-    "CPU_MAKE": "intel",
-    "RELEASE_YEAR": 2018,
-    "RAM": 182,
-    "CPU_FREQ": 2600,
-    "CPU_CHIPS": 1,
-    "VHOST_RATIO": 0.038461538461538464
-  },
-  "AMD EPYC 7763": {
-    "MODEL_NAME": "EPYC_7763",
-    "TDP": 280,
-    "CPU_THREADS": 128,
-    "CPU_CORES": 64,
-    "CPU_MAKE": "amd",
-    "RELEASE_YEAR": 2021,
-    "RAM": 512,
-    "CPU_FREQ": 2450,
-    "CPU_CHIPS": 1,
-    "VHOST_RATIO": 0.03125
-  },
-  "AMD EPYC 7B12": {
-    "MODEL_NAME": "EPYC_7B12",
-    "TDP": 240,
-    "CPU_THREADS": 128,
-    "CPU_CORES": 64,
-    "CPU_MAKE": "amd",
-    "RELEASE_YEAR": 2021,
-    "RAM": 512,
-    "CPU_FREQ": 2250,
-    "CPU_CHIPS": 1,
-    "VHOST_RATIO": 0.015625
-  }
+    "8272CL": {
+        "MODEL_NAME": "8272CL",
+        "TDP": 195,
+        "CPU_THREADS": 52,
+        "CPU_CORES": 26,
+        "CPU_MAKE": "intel",
+        "RELEASE_YEAR": 2019,
+        "RAM": 182,
+        "CPU_FREQ": 2600,
+        "CPU_CHIPS": 1,
+        "VHOST_RATIO": 0.038461538461538464
+    },
+    "8370C": {
+        "MODEL_NAME": "8370C",
+        "TDP": 270,
+        "CPU_THREADS": 64,
+        "CPU_CORES": 32,
+        "CPU_MAKE": "intel",
+        "RELEASE_YEAR": 2021,
+        "RAM": 224,
+        "CPU_FREQ": 2800,
+        "CPU_CHIPS": 1,
+        "VHOST_RATIO": 0.03125
+    },
+    "E5-2673 v4": {
+        "MODEL_NAME": "E5-2673v4",
+        "TDP": 165,
+        "CPU_THREADS": 52,
+        "CPU_CORES": 26,
+        "CPU_MAKE": "intel",
+        "RELEASE_YEAR": 2018,
+        "RAM": 182,
+        "CPU_FREQ": 2300,
+        "CPU_CHIPS": 1,
+        "VHOST_RATIO": 0.038461538461538464
+    },
+    "E5-2673 v3": {
+        "MODEL_NAME": "E5-2673v3",
+        "TDP": 110,
+        "CPU_THREADS": 24,
+        "CPU_CORES": 12,
+        "CPU_MAKE": "intel",
+        "RELEASE_YEAR": 2015,
+        "RAM": 84,
+        "CPU_FREQ": 2400,
+        "CPU_CHIPS": 1,
+        "VHOST_RATIO": 0.08333333333333333
+    },
+    "8171M": {
+        "MODEL_NAME": "8171M",
+        "TDP": 165,
+        "CPU_THREADS": 52,
+        "CPU_CORES": 26,
+        "CPU_MAKE": "intel",
+        "RELEASE_YEAR": 2018,
+        "RAM": 182,
+        "CPU_FREQ": 2600,
+        "CPU_CHIPS": 1,
+        "VHOST_RATIO": 0.038461538461538464
+    },
+    "AMD EPYC 7763": {
+        "MODEL_NAME": "EPYC_7763",
+        "TDP": 280,
+        "CPU_THREADS": 128,
+        "CPU_CORES": 64,
+        "CPU_MAKE": "amd",
+        "RELEASE_YEAR": 2021,
+        "RAM": 512,
+        "CPU_FREQ": 2450,
+        "CPU_CHIPS": 1,
+        "VHOST_RATIO": 0.03125
+    },
+    "AMD EPYC 7B12": {
+        "MODEL_NAME": "EPYC_7B12",
+        "TDP": 240,
+        "CPU_THREADS": 128,
+        "CPU_CORES": 64,
+        "CPU_MAKE": "amd",
+        "RELEASE_YEAR": 2021,
+        "RAM": 512,
+        "CPU_FREQ": 2250,
+        "CPU_CHIPS": 1,
+        "VHOST_RATIO": 0.015625
+    }
 }
 
 
@@ -10340,7 +10343,7 @@ function wrappy (fn, cb) {
 /***/ 1963:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const { execSync } = __nccwpck_require__(2081);
+const {execSync} = __nccwpck_require__(2081);
 
 const setup = function setup() {
     try {

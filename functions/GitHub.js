@@ -1,4 +1,5 @@
 import {Base64} from "js-base64";
+
 const core = require('@actions/core');
 
 const github = require("@actions/github");
@@ -127,6 +128,7 @@ export async function getForkPoint(pull_request, octokit) {
         return null;
     }
 }
+
 export async function getMeasurementsFromRepo(octokit, sha) {
     try {
         const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
@@ -146,6 +148,7 @@ export async function getMeasurementsFromRepo(octokit, sha) {
         return null;
     }
 }
+
 export async function createComment(octokit, data, difference, pull_request) {
     const issueNumber = pull_request.number;
     let body = `⚡ The total energy is: ${Math.round((data['total_energy'] + Number.EPSILON) * 100) / 100}\n💪 The power is: ${Math.round((data['power_avg'] + Number.EPSILON) * 100) / 100}\n🕒 The duration is: ${data['duration']}`;
