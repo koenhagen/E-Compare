@@ -10587,7 +10587,7 @@ const github = __nccwpck_require__(3922);
 const fs = __nccwpck_require__(7147);
 const util = __nccwpck_require__(3837);
 const os = __nccwpck_require__(2037);
-const exec = util.promisify((__nccwpck_require__(2081).exec));
+const exec = ((__nccwpck_require__(2081).exec));
 const setup = __nccwpck_require__(1963);
 const AI = __nccwpck_require__(5773);
 const {
