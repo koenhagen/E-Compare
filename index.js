@@ -3,7 +3,7 @@ const github = require("@actions/github");
 const fs = require("fs");
 const util = require('util');
 const os = require("os");
-const exec = (require('child_process').exec);
+const exec = util.promisify(require('child_process').exec);
 const setup = require('./setup');
 const AI = require('./functions/AI');
 const {
@@ -40,7 +40,6 @@ async function measureCpuUsage() {
         '/tmp/demo-reporter > /tmp/cpu-util.txt &');
     for (let i = 0; i < count; i++) {
         await exec(unitTest);
-
     }
     await exec('killall -9 -q demo-reporter');
     await estimateEnergy()
