@@ -10623,7 +10623,11 @@ async function measureCpuUsage() {
     exec('killall -9 -q demo-reporter || true\n' +
         '/tmp/demo-reporter > /tmp/cpu-util.txt &');
     for (let i = 0; i < count; i++) {
-        await exec(unitTest);
+        exec(unitTest, function(error, stdout, stderr){
+            if(error) throw error;
+            console.log(stdout);
+            console.log(stderr);
+        });
     }
     await exec('killall -9 -q demo-reporter');
     await estimateEnergy()
