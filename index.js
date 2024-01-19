@@ -1,9 +1,8 @@
 const core = require('@actions/core');
 const github = require("@actions/github");
 const fs = require("fs");
-const util = require('util');
 const os = require("os");
-const exec = (require('child_process').exec);
+const exec = require('child_process').exec;
 const setup = require('./setup');
 const AI = require('./functions/AI');
 const {
@@ -39,7 +38,24 @@ async function measureCpuUsage() {
     exec('killall -9 -q demo-reporter || true\n' +
         '/tmp/demo-reporter > /tmp/cpu-util.txt &');
     for (let i = 0; i < count; i++) {
-        await exec(unitTest);
+        await new Promise((resolve, reject) => {
+            exec(unitTest, {maxBuffer: undefined}, (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`exec error: ${error}`);
+                    reject(error);
+                    return;
+                }
+                if (stderr) {
+                    console.error(`stderr: ${stderr}`);
+                    reject(stderr);
+                    return;
+                }
+                if (stdout) {
+                    console.log(`stdout: ${stdout}`);
+                }
+                resolve();
+            });
+        });
     }
     await exec('killall -9 -q demo-reporter');
     await estimateEnergy()
