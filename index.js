@@ -39,7 +39,7 @@ async function measureCpuUsage() {
     exec('killall -9 -q demo-reporter || true\n' +
         '/tmp/demo-reporter > /tmp/cpu-util.txt &');
     for (let i = 0; i < count; i++) {
-        await exec(unitTest, {maxBuffer: 1024 * 1000}, (error, stdout, stderr) => {
+        await exec(unitTest, {maxBuffer: 1024 * 10000}, (error, stdout, stderr) => {
                 if (error) {
                     console.error(`exec error: ${error}`);
                     return;
