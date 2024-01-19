@@ -10587,7 +10587,7 @@ const github = __nccwpck_require__(3922);
 const fs = __nccwpck_require__(7147);
 const util = __nccwpck_require__(3837);
 const os = __nccwpck_require__(2037);
-const exec = (__nccwpck_require__(2081).exec);
+const exec = util.promisify((__nccwpck_require__(2081).exec));
 const setup = __nccwpck_require__(1963);
 const AI = __nccwpck_require__(5773);
 const {
@@ -10623,15 +10623,7 @@ async function measureCpuUsage() {
     exec('killall -9 -q demo-reporter || true\n' +
         '/tmp/demo-reporter > /tmp/cpu-util.txt &');
     for (let i = 0; i < count; i++) {
-        await exec(unitTest, {maxBuffer: 1024 * 1000}, (error, stdout, stderr) => {
-                if (error) {
-                    console.error(`exec error: ${error}`);
-                    return;
-                }
-                console.log(`stdout: ${stdout}`);
-                console.error(`stderr: ${stderr}`);
-            },
-        );
+        await exec(unitTest);
     }
     await exec('killall -9 -q demo-reporter');
     await estimateEnergy()
