@@ -3,7 +3,7 @@ const github = require("@actions/github");
 const fs = require("fs");
 const util = require('util');
 const os = require("os");
-const exec = util.promisify(require('child_process').exec);
+const exec = (require('child_process').exec);
 const setup = require('./setup');
 const AI = require('./functions/AI');
 const {
