@@ -15,6 +15,10 @@ inputs:
     description: 'The amount of historic commits to generate reports for'
     required: false
     default: ''
+  isBash:
+    description: 'Whether the command is a bash command or not'
+    required: false
+    default: 'false'
 runs:
   using: 'node20'
   main: 'dist/index.js'

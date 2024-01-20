@@ -39,7 +39,11 @@ async function measureCpuUsage() {
         '/tmp/demo-reporter > /tmp/cpu-util.txt &');
     for (let i = 0; i < count; i++) {
         await new Promise((resolve, reject) => {
-            exec(unitTest, {maxBuffer: undefined}, (error, stdout, stderr) => {
+            const options = {maxBuffer: undefined};
+            if (core.getInput('isBash') === 'true') {
+                options.shell = '/bin/bash';
+            }
+            exec(unitTest, options, (error, stdout, stderr) => {
                 if (error) {
                     console.error(`exec error: ${error}`);
                     reject(error);
