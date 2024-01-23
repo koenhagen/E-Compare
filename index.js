@@ -12,6 +12,7 @@ const {run_historic} = require("./historic");
 const models = require('./models').models;
 
 async function estimateEnergy() {
+    console.log(`Estimating energy consumption`);
     let modelData;
     try {
         const modelName = os.cpus()[0].model;
