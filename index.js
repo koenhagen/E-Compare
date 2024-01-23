@@ -62,6 +62,7 @@ async function measureCpuUsage() {
             });
         });
     }
+    console.log("Finished testing command: " + unitTest);
     await exec('killall -9 -q demo-reporter');
     await estimateEnergy()
 
