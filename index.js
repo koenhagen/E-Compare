@@ -32,37 +32,47 @@ async function estimateEnergy() {
 }
 
 async function measureCpuUsage() {
+    try {
+        const unitTest = core.getInput('run');
+        console.log("Testing command: " + unitTest);
+        const count = core.getInput('count');
 
-    const unitTest = core.getInput('run');
-    console.log("Testing command: " + unitTest);
-    const count = core.getInput('count');
-    exec('killall -9 -q demo-reporter || true\n' +
-        '/tmp/demo-reporter > /tmp/cpu-util.txt &');
-    for (let i = 0; i < count; i++) {
-        await new Promise((resolve, reject) => {
-            const options = {maxBuffer: undefined};
-            if (core.getInput('isBash') === 'true') {
-                options.shell = '/bin/bash';
-            }
-            exec(unitTest, options, (error, stdout, stderr) => {
-                if (error) {
-                    console.error(`exec error: ${error}`);
-                    return;
+        exec('killall -9 -q demo-reporter || true\n' +
+            '/tmp/demo-reporter > /tmp/cpu-util.txt &');
+
+        for (let i = 0; i < count; i++) {
+            await new Promise((resolve, reject) => {
+                const options = { maxBuffer: undefined };
+                if (core.getInput('isBash') === 'true') {
+                    options.shell = '/bin/bash';
                 }
-                if (stderr) {
-                    console.error(`stderr: ${stderr}`);
-                    return;
-                }
-                if (stdout) {
-                    console.log(`stdout: ${stdout}`);
-                }
-                resolve();
+                exec(unitTest, options, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`exec error: ${error}`);
+                        reject(error); // Reject the promise on error
+                        return;
+                    }
+                    if (stderr) {
+                        console.error(`stderr: ${stderr}`);
+                        reject(stderr); // Reject the promise on stderr
+                        return;
+                    }
+                    if (stdout) {
+                        console.log(`stdout: ${stdout}`);
+                    }
+                    resolve();
+                });
             });
-        });
+        }
+
+        await exec('killall -9 -q demo-reporter');
+        console.log("Finished testing command: " + unitTest);
+        await estimateEnergy();
+    } catch (error) {
+        console.error("An error occurred:", error);
+        // Handle or log the error as needed
+        throw error; // Re-throw the error to propagate it further if necessary
     }
-    console.log("Finished testing command: " + unitTest);
-    await exec('killall -9 -q demo-reporter');
-    await estimateEnergy()
 
     return Promise.resolve();
 }
