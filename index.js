@@ -47,12 +47,10 @@ async function measureCpuUsage() {
             exec(unitTest, options, (error, stdout, stderr) => {
                 if (error) {
                     console.error(`exec error: ${error}`);
-                    reject(error);
                     return;
                 }
                 if (stderr) {
                     console.error(`stderr: ${stderr}`);
-                    reject(stderr);
                     return;
                 }
                 if (stdout) {
