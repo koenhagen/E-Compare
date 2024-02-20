@@ -41,26 +41,19 @@ async function measureCpuUsage() {
             '/tmp/demo-reporter > /tmp/cpu-util.txt &');
 
         for (let i = 0; i < count; i++) {
-            await new Promise((resolve, reject) => {
+            await new Promise((resolve) => {
                 const options = { maxBuffer: undefined };
                 if (core.getInput('isBash') === 'true') {
                     options.shell = '/bin/bash';
                 }
                 exec(unitTest, options, (error, stdout, stderr) => {
-                    if (error) {
-                        console.error(`exec error: ${error}`);
-                        reject(error); // Reject the promise on error
-                        return;
-                    }
-                    if (stderr) {
-                        console.error(`stderr: ${stderr}`);
-                        reject(stderr); // Reject the promise on stderr
-                        return;
+                    if (error || stderr) {
+                        console.error(`Error: ${error || stderr}`);
                     }
                     if (stdout) {
                         console.log(`stdout: ${stdout}`);
                     }
-                    resolve();
+                    resolve(); // Resolve the promise regardless of error
                 });
             });
         }
