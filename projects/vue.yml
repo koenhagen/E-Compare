@@ -1,0 +1,26 @@
+name: 'ci'
+on:
+  push:
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+
+      - name: Set node version to 18
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+          cache: 'pnpm'
+
+      - run: pnpm install
+
+      - name: Run unit tests
+        uses: koenhagen/measure-energy-action@v0.20
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: pnpm run test:unit
+          count: 10
